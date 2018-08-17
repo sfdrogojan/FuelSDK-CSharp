@@ -16,10 +16,7 @@ namespace objsamples
             Console.WriteLine("--- Testing Campaign ---");
 
             Console.WriteLine("\n Retrieve All Campaigns");
-            var getCampaign = new ET_Campaign
-            {
-                AuthStub = myclient,
-            };
+            var getCampaign = new ET_Campaign(myclient);
             var grCampaign = getCampaign.Get();
 
             Console.WriteLine("Get Status: " + grCampaign.Status.ToString());
@@ -43,9 +40,8 @@ namespace objsamples
             }
 
             Console.WriteLine("\n Create Campaign");
-            var camp = new ET_Campaign
+            var camp = new ET_Campaign(myclient)
             {
-                AuthStub = myclient,
                 Name = "CSharpSDKCreatedForTEST",
                 Description = "CSharpSDKCreatedForTEST",
             };
@@ -63,10 +59,9 @@ namespace objsamples
                 idOfpostCampaign = campaign.ID.ToString();
 
                 Console.WriteLine("\n Retrieve the new Campaign");
-                var singleCampaign = new ET_Campaign
+                var singleCampaign = new ET_Campaign(myclient)
                 {
-                    AuthStub = myclient,
-                    ID = campaign.ID,
+                    ID = campaign.ID
                 };
                 var grSingleCamp = singleCampaign.Get();
 
@@ -76,12 +71,11 @@ namespace objsamples
                 Console.WriteLine("Results Length: " + grSingleCamp.Results.Length);
 
                 Console.WriteLine("\n Create a new Campaign Asset");
-                var postCampAsset = new ET_CampaignAsset
+                var postCampAsset = new ET_CampaignAsset(myclient)
                 {
-                    AuthStub = myclient,
                     CampaignID = idOfpostCampaign,
                     Type = exampleAssetType,
-                    IDs = new[] { exampleAssetItemID },
+                    IDs = new[] { exampleAssetItemID }
                 };
                 var prCampAsset = postCampAsset.Post();
                 Console.WriteLine("Post Status: " + prCampAsset.Status.ToString());
@@ -94,11 +88,10 @@ namespace objsamples
                     idOfpostCampaignAsset = prCampAsset.Results[0].Object.ID.ToString();
 
                     Console.WriteLine("\n Retrieve a single new Campaign Asset");
-                    var singleCampAsset = new ET_CampaignAsset
+                    var singleCampAsset = new ET_CampaignAsset(myclient)
                     {
-                        AuthStub = myclient,
                         ID = Convert.ToInt16(idOfpostCampaignAsset),
-                        CampaignID = idOfpostCampaign,
+                        CampaignID = idOfpostCampaign
                     };
                     var grSingleCampAsset = singleCampAsset.Get();
                     Console.WriteLine("Get Status: " + grSingleCampAsset.Status.ToString());
@@ -107,9 +100,8 @@ namespace objsamples
                     Console.WriteLine("Results Length: " + grSingleCampAsset.Results.Length);
 
                     Console.WriteLine("\n Delete the new Campaign Asset");
-                    var deleteCampAsset = new ET_CampaignAsset
+                    var deleteCampAsset = new ET_CampaignAsset(myclient)
                     {
-                        AuthStub = myclient,
                         ID = Convert.ToInt16(idOfpostCampaignAsset),
                         CampaignID = idOfpostCampaign,
                     };
@@ -121,10 +113,9 @@ namespace objsamples
                 }
 
                 Console.WriteLine("\n Delete Campaign");
-                var delCampaign = new ET_Campaign
+                var delCampaign = new ET_Campaign(myclient)
                 {
-                    AuthStub = myclient,
-                    ID = campaign.ID,
+                    ID = campaign.ID
                 };
                 var drCampaign = delCampaign.Delete();
                 Console.WriteLine("Delete Status: " + drCampaign.Status.ToString());

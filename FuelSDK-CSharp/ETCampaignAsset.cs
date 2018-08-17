@@ -31,9 +31,10 @@ namespace FuelSDK
         /// <summary>
         /// Initializes a new instance of the <see cref="T:FuelSDK.ETCampaignAsset"/> class.
         /// </summary>
-		public ETCampaignAsset()
+		public ETCampaignAsset(ETClient client)
 		{
-			Endpoint = "https://www.exacttargetapis.com/hub/v1/campaigns/{CampaignID}/assets/{ID}";
+            AuthStub = client;
+            Endpoint = client.RestEndPoint + @"/hub/v1/campaigns/{CampaignID}/assets/{ID}";
 			URLProperties = new[] { "CampaignID", "ID" };
 			RequiredURLProperties = new[] { "CampaignID" };
 		}
@@ -79,6 +80,6 @@ namespace FuelSDK
     [Obsolete("ET_Campaign will be removed in future release. Please use ETCampaign instead.")]
 	public class ET_CampaignAsset : ETCampaignAsset
 	{
-		
+        public ET_CampaignAsset(ETClient client) : base(client) {}
 	}
 }

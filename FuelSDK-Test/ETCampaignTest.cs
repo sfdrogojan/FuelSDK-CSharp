@@ -18,18 +18,23 @@ namespace FuelSDK.Test
         [OneTimeSetUp]
         public void Setup()
         {
-            client = new ETClient();
+            try {
+                client = new ETClient();
+            }
+            catch(Exception ex) {
+                var a = ex;
+                throw;
+            }
         }
 
-        [SetUp]
+        [SetUp] 
         public void CampaignSetup()
         {
 			campaignName = Guid.NewGuid().ToString();
 			campaignDesc = "Campaign created using C# automated test case";
 
-			var campObj = new ETCampaign
+			var campObj = new ETCampaign(client)
 			{
-				AuthStub = client,
 				Name = campaignName,
 				Description = campaignDesc
 			};
@@ -43,9 +48,8 @@ namespace FuelSDK.Test
         {
             if(campaign != null)
             {
-				var campObj = new ETCampaign();
+				var campObj = new ETCampaign(client);
 				campObj.ID = campaign.ID;
-				campObj.AuthStub = client;
                 campObj.Delete();
             }
         }
@@ -59,9 +63,8 @@ namespace FuelSDK.Test
         [Test()]
         public void GetCampaign()
         {
-            var campObj = new ETCampaign();
+            var campObj = new ETCampaign(client);
             campObj.ID = campaign.ID;
-            campObj.AuthStub = client;
             var result = campObj.Get();
             var getCampObj = (ETCampaign) result.Results[0];
             Assert.AreEqual(getCampObj.Name,campaignName);
@@ -71,9 +74,8 @@ namespace FuelSDK.Test
         [Test()]
         public void DeleteCampaign()
         {
-			var campObj = new ETCampaign();
+			var campObj = new ETCampaign(client);
 			campObj.ID = campaign.ID;
-			campObj.AuthStub = client;
             var result = campObj.Delete();
 
             Assert.AreEqual(result.Code,200);

@@ -55,6 +55,15 @@ namespace FuelSDK
 			set { this["authEndPoint"] = value; }
 		}
         /// <summary>
+        /// Gets or sets the REST end point.
+        /// </summary>
+        /// <value>The REST end point.</value>
+        [ConfigurationProperty("restEndPoint", DefaultValue = "https://www.exacttargetapis.com")]
+        public string RestEndPoint {
+            get { return (string)this["restEndPoint"]; }
+            set { this["restEndPoint"] = value;  }
+        }
+        /// <summar>y
         /// Clone this instance.
         /// </summary>
         /// <returns>The clone.</returns>

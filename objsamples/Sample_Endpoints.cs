@@ -12,10 +12,8 @@ namespace objsamples
             Console.WriteLine("--- Testing Endpoint ---");
 
             Console.WriteLine("\n Retrieve All Endpoints");
-            var getEndpoint = new ET_Endpoint
-            {
-                AuthStub = myclient,
-            };
+            var getEndpoint = new ET_Endpoint(myclient);
+
             var grEndpoint = getEndpoint.Get();
 
             Console.WriteLine("Get Status: " + grEndpoint.Status.ToString());
@@ -25,10 +23,9 @@ namespace objsamples
             Console.WriteLine("MoreResults: " + grEndpoint.MoreResults.ToString());
 
             Console.WriteLine("\n Retrieve Single Endpoint by Type");
-            var getSingleEndpoint = new ET_Endpoint
+            var getSingleEndpoint = new ET_Endpoint(myclient)
             {
-                AuthStub = myclient,
-                Type = "soap",
+                Type = "soap"
             };
             var grSingleEndpoint = getSingleEndpoint.Get();
 

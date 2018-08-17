@@ -408,7 +408,7 @@ namespace FuelSDK
 			if (client == null)
 				throw new InvalidOperationException("client");
 			client.RefreshToken();
-			using (var scope = new OperationContextScope(client.SoapClient.InnerChannel))
+			/*using (var scope = new OperationContextScope(client.SoapClient.InnerChannel))
 			{
 				// Add oAuth token to SOAP header.
 				XNamespace ns = "http://exacttarget.com";
@@ -419,7 +419,7 @@ namespace FuelSDK
 				var httpRequest = new System.ServiceModel.Channels.HttpRequestMessageProperty();
 				OperationContext.Current.OutgoingMessageProperties.Add(System.ServiceModel.Channels.HttpRequestMessageProperty.Name, httpRequest);
 				httpRequest.Headers.Add(HttpRequestHeader.UserAgent, ETClient.SDKVersion);
-
+*/
 				var response = func(client, objs.Select(select).ToArray());
 				RequestID = response.RequestID;
 				Status = (response.OverallStatus == "OK" || response.OverallStatus == "MoreDataAvailable");
@@ -427,7 +427,7 @@ namespace FuelSDK
 				MoreResults = (response.OverallStatus == "MoreDataAvailable");
 				Message = (response.OverallStatusMessage ?? string.Empty);
 
-				string r;
+				/*string r;
 				APIObject[] a;
 				var d = client.SoapClient.Retrieve(
 					new RetrieveRequest
@@ -435,10 +435,10 @@ namespace FuelSDK
 						ObjectType = "BusinessUnit",
 						Properties = new[] { "ID", "Name" }
 					}, out r, out a
-				);
+				);*/
 
 				return response.Results;
-			}
+			//}
 		}
 
 		protected string ExecuteFuel(FuelObject obj, string[] required, string method, bool postValue)

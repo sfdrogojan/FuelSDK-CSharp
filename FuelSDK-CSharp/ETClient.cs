@@ -35,6 +35,7 @@ namespace FuelSDK
         public string OrganizationId { get; private set; }
         public string Stack { get; private set; }
         private string authEndPoint { get; set; }
+        internal string RestEndPoint { get; private set; }
         public class RefreshState
         {
             public string RefreshKey { get; set; }
@@ -64,7 +65,13 @@ namespace FuelSDK
                 {
                     configSection.AuthenticationEndPoint = parameters["authEndPoint"];
                 }
+                if (parameters.AllKeys.Contains("restEndPoint"))
+                {
+                    configSection.RestEndPoint = parameters["restEndPoint"];
+                }
             }
+
+            this.RestEndPoint = configSection.RestEndPoint;
 
             if (string.IsNullOrEmpty(configSection.ClientId) || string.IsNullOrEmpty(configSection.ClientSecret))
                 throw new Exception("clientId or clientSecret is null: Must be provided in config file or passed when instantiating ETClient");
@@ -106,7 +113,7 @@ namespace FuelSDK
             }
 
             // Find the appropriate endpoint for the acccount
-            var grSingleEndpoint = new ETEndpoint { AuthStub = this, Type = "soap" }.Get();
+            var grSingleEndpoint = new ETEndpoint(this) { Type = "soap" }.Get();
             if (grSingleEndpoint.Status && grSingleEndpoint.Results.Length == 1)
                 configSection.SoapEndPoint = ((ETEndpoint)grSingleEndpoint.Results[0]).URL;
             else
@@ -118,30 +125,31 @@ namespace FuelSDK
             SoapClient.ClientCredentials.UserName.UserName = "*";
             SoapClient.ClientCredentials.UserName.Password = "*";
 
-            // Find Organization Information
-            if (organizationFind)
-                using (var scope = new OperationContextScope(SoapClient.InnerChannel))
-                {
-                    // Add oAuth token to SOAP header.
-                    XNamespace ns = "http://exacttarget.com";
-                    var oauthElement = new XElement(ns + "oAuthToken", InternalAuthToken);
-                    var xmlHeader = MessageHeader.CreateHeader("oAuth", "http://exacttarget.com", oauthElement);
-                    OperationContext.Current.OutgoingMessageHeaders.Add(xmlHeader);
+//            // Find Organization Information
+//            if (organizationFind)
+//            {
+//                //using (var scope = new OperationContextScope(SoapClient.InnerChannel))
+//                //{
+//                    // Add oAuth token to SOAP header.
+//                    /*XNamespace ns = "http://exacttarget.com";
+//                    var oauthElement = new XElement(ns + "oAuthToken", InternalAuthToken);
+//                    var xmlHeader = MessageHeader.CreateHeader("oAuth", "http://exacttarget.com", oauthElement);
+//                    OperationContext.Current.OutgoingMessageHeaders.Add(xmlHeader);
 
-                    var httpRequest = new System.ServiceModel.Channels.HttpRequestMessageProperty();
-                    OperationContext.Current.OutgoingMessageProperties.Add(System.ServiceModel.Channels.HttpRequestMessageProperty.Name, httpRequest);
-                    httpRequest.Headers.Add(HttpRequestHeader.UserAgent, ETClient.SDKVersion);
-
-                    string requestID;
-                    APIObject[] results;
-                    var r = SoapClient.Retrieve(new RetrieveRequest { ObjectType = "BusinessUnit", Properties = new[] { "ID", "Client.EnterpriseID" } }, out requestID, out results);
-                    if (r == "OK" && results.Length > 0)
-                    {
-                        EnterpriseId = results[0].Client.EnterpriseID.ToString();
-                        OrganizationId = results[0].ID.ToString();
-                        Stack = GetStackFromSoapEndPoint(new Uri(configSection.SoapEndPoint));
-                    }
-                }
+//                    var httpRequest = new System.ServiceModel.Channels.HttpRequestMessageProperty();
+//                    OperationContext.Current.OutgoingMessageProperties.Add(System.ServiceModel.Channels.HttpRequestMessageProperty.Name, httpRequest);
+//                    httpRequest.Headers.Add(HttpRequestHeader.UserAgent, ETClient.SDKVersion);
+//*/
+                //    string requestID;
+                //    APIObject[] results;
+                //    var r = SoapClient.Retrieve(new RetrieveRequest { ObjectType = "BusinessUnit", Properties = new[] { "ID", "Client.EnterpriseID" } }, out requestID, out results);
+                //    if (r == "OK" && results.Length > 0)
+                //    {
+                //        EnterpriseId = results[0].Client.EnterpriseID.ToString();
+                //        OrganizationId = results[0].ID.ToString();
+                //        Stack = GetStackFromSoapEndPoint(new Uri(configSection.SoapEndPoint));
+                //    }
+                //}
         }
 
         private string DecodeJWT(string jwt, string key)

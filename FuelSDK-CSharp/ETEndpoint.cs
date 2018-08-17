@@ -21,9 +21,10 @@ namespace FuelSDK
         /// <summary>
         /// Initializes a new instance of the <see cref="T:FuelSDK.ETEndpoint"/> class.
         /// </summary>
-		public ETEndpoint()
+		public ETEndpoint(ETClient client)
 		{
-			Endpoint = "https://www.exacttargetapis.com/platform/v1/endpoints/{Type}";
+            AuthStub = client;
+			Endpoint = client.RestEndPoint + @"/platform/v1/endpoints/{Type}";
 			URLProperties = new[] { "Type" };
 			RequiredURLProperties = new string[0];
 		}
@@ -52,6 +53,6 @@ namespace FuelSDK
     [Obsolete("ET_Endpoint will be removed in future release. Please use ETEndpoint instead.")]
     public class ET_Endpoint : ETEndpoint
     {
-
+        public ET_Endpoint(ETClient client) : base(client) {}
     }
 }
