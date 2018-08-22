@@ -35,7 +35,7 @@ namespace FuelSDK
         public string OrganizationId { get; private set; }
         public string Stack { get; private set; }
         private string authEndPoint { get; set; }
-        internal string RestEndPoint { get; private set; }
+        public string RestEndPoint { get; private set; }
         public class RefreshState
         {
             public string RefreshKey { get; set; }
@@ -46,6 +46,10 @@ namespace FuelSDK
 
         public ETClient(string jwt)
             : this(new NameValueCollection { { "jwt", jwt } }, null) { }
+        public ETClient(IConfigurationProvider configuration)
+        {
+
+        }
         public ETClient(NameValueCollection parameters = null, RefreshState refreshState = null)
         {
             // Get configuration file and set variables
@@ -125,31 +129,32 @@ namespace FuelSDK
             SoapClient.ClientCredentials.UserName.UserName = "*";
             SoapClient.ClientCredentials.UserName.Password = "*";
 
-//            // Find Organization Information
-//            if (organizationFind)
-//            {
-//                //using (var scope = new OperationContextScope(SoapClient.InnerChannel))
-//                //{
-//                    // Add oAuth token to SOAP header.
-//                    /*XNamespace ns = "http://exacttarget.com";
-//                    var oauthElement = new XElement(ns + "oAuthToken", InternalAuthToken);
-//                    var xmlHeader = MessageHeader.CreateHeader("oAuth", "http://exacttarget.com", oauthElement);
-//                    OperationContext.Current.OutgoingMessageHeaders.Add(xmlHeader);
+            //            // Find Organization Information
+            if (organizationFind)
+            {
+                using (var scope = new OperationContextScope(SoapClient.InnerChannel))
+                {
+                    // Add oAuth token to SOAP header.
+                    XNamespace ns = "http://exacttarget.com";
+                    var oauthElement = new XElement(ns + "oAuthToken", InternalAuthToken);
+                    var xmlHeader = MessageHeader.CreateHeader("oAuth", "http://exacttarget.com", oauthElement);
+                    OperationContext.Current.OutgoingMessageHeaders.Add(xmlHeader);
 
-//                    var httpRequest = new System.ServiceModel.Channels.HttpRequestMessageProperty();
-//                    OperationContext.Current.OutgoingMessageProperties.Add(System.ServiceModel.Channels.HttpRequestMessageProperty.Name, httpRequest);
-//                    httpRequest.Headers.Add(HttpRequestHeader.UserAgent, ETClient.SDKVersion);
-//*/
-                //    string requestID;
-                //    APIObject[] results;
-                //    var r = SoapClient.Retrieve(new RetrieveRequest { ObjectType = "BusinessUnit", Properties = new[] { "ID", "Client.EnterpriseID" } }, out requestID, out results);
-                //    if (r == "OK" && results.Length > 0)
-                //    {
-                //        EnterpriseId = results[0].Client.EnterpriseID.ToString();
-                //        OrganizationId = results[0].ID.ToString();
-                //        Stack = GetStackFromSoapEndPoint(new Uri(configSection.SoapEndPoint));
-                //    }
-                //}
+                    var httpRequest = new System.ServiceModel.Channels.HttpRequestMessageProperty();
+                    OperationContext.Current.OutgoingMessageProperties.Add(System.ServiceModel.Channels.HttpRequestMessageProperty.Name, httpRequest);
+                    httpRequest.Headers.Add(HttpRequestHeader.UserAgent, ETClient.SDKVersion);
+
+                    string requestID;
+                    APIObject[] results;
+                    var r = SoapClient.Retrieve(new RetrieveRequest { ObjectType = "BusinessUnit", Properties = new[] { "ID", "Client.EnterpriseID" } }, out requestID, out results);
+                    if (r == "OK" && results.Length > 0)
+                    {
+                        EnterpriseId = results[0].Client.EnterpriseID.ToString();
+                        OrganizationId = results[0].ID.ToString();
+                        Stack = GetStackFromSoapEndPoint(new Uri(configSection.SoapEndPoint));
+                    }
+                }
+            }
         }
 
         private string DecodeJWT(string jwt, string key)
@@ -208,6 +213,7 @@ namespace FuelSDK
 
         public void RefreshToken(bool force = false)
         {
+            ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;
             // RefreshToken
             if (!string.IsNullOrEmpty(AuthToken) && DateTime.Now.AddSeconds(300) <= AuthTokenExpiration && !force)
                 return;

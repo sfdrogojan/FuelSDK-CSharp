@@ -21,7 +21,7 @@ namespace FuelSDK.Test
             try {
                 client = new ETClient();
             }
-            catch(Exception ex) {
+            catch(System.Net.WebException ex) {
                 var a = ex;
                 throw;
             }
