@@ -46,10 +46,6 @@ namespace FuelSDK
 
         public ETClient(string jwt)
             : this(new NameValueCollection { { "jwt", jwt } }, null) { }
-        public ETClient(IConfigurationProvider configuration)
-        {
-
-        }
         public ETClient(NameValueCollection parameters = null, RefreshState refreshState = null)
         {
             // Get configuration file and set variables

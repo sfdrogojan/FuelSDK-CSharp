@@ -36,10 +36,9 @@ namespace FuelSDK
         /// <summary>
         /// Initializes a new instance of the <see cref="T:FuelSDK.ETCampaign"/> class.
         /// </summary>
-		public ETCampaign(ETClient client)
+		public ETCampaign()
 		{
-            AuthStub = client;
-            Endpoint = client.RestEndPoint + @"/hub/v1/campaigns/{ID}";
+            Endpoint = AuthStub.RestEndPoint + @"/hub/v1/campaigns/{ID}";
 			URLProperties = new[] { "ID" };
 			RequiredURLProperties = new string[0];
 		}
