@@ -42,7 +42,10 @@ namespace FuelSDK
             public string OrganizationId { get; set; }
             public string Stack { get; set; }
         }
+        //public ETClient()
+        //{
 
+        //}
         public ETClient(string jwt)
             : this(new NameValueCollection { { "jwt", jwt } }, null) { }
         public ETClient(NameValueCollection parameters = null, RefreshState refreshState = null)
@@ -50,28 +53,9 @@ namespace FuelSDK
             // Get configuration file and set variables
             configSection = (FuelSDKConfigurationSection)ConfigurationManager.GetSection("fuelSDK");
             configSection = (configSection != null ? (FuelSDKConfigurationSection)configSection.Clone() : new FuelSDKConfigurationSection());
-            if (parameters != null)
-            {
-                if (parameters.AllKeys.Contains("appSignature"))
-                    configSection.AppSignature = parameters["appSignature"];
-                if (parameters.AllKeys.Contains("clientId"))
-                    configSection.ClientId = parameters["clientId"];
-                if (parameters.AllKeys.Contains("clientSecret"))
-                    configSection.ClientSecret = parameters["clientSecret"];
-                if (parameters.AllKeys.Contains("soapEndPoint"))
-                    configSection.SoapEndPoint = parameters["soapEndPoint"];
-                if (parameters.AllKeys.Contains("authEndPoint"))
-                {
-                    configSection.AuthenticationEndPoint = parameters["authEndPoint"];
-                }
-                if (parameters.AllKeys.Contains("restEndPoint"))
-                {
-                    configSection.RestEndPoint = parameters["restEndPoint"];
-                }
-            }
 
-            if (string.IsNullOrEmpty(configSection.ClientId) || string.IsNullOrEmpty(configSection.ClientSecret))
-                throw new Exception("clientId or clientSecret is null: Must be provided in config file or passed when instantiating ETClient");
+            OverrideConfigValues(parameters);
+            ValidateRequiredConfigValues();
 
             // If JWT URL Parameter Used
             var organizationFind = false;
@@ -85,8 +69,16 @@ namespace FuelSDK
             }
             else if (parameters != null && parameters.AllKeys.Contains("jwt") && !string.IsNullOrEmpty(parameters["jwt"]))
             {
+                // intru daca refreshState == null
                 if (string.IsNullOrEmpty(configSection.AppSignature))
+                {
+                    throw new Exception("appSignature is null: Must be provided in config file or passed when instantiating ETClient");
+                }
+                if (string.IsNullOrEmpty(configSection.AppSignature))
+                {
                     throw new Exception("Unable to utilize JWT for SSO without appSignature: Must be provided in config file or passed when instantiating ETClient");
+                }
+
                 var encodedJWT = parameters["jwt"].ToString().Trim();
                 var decodedJWT = DecodeJWT(encodedJWT, configSection.AppSignature);
                 var parsedJWT = JObject.Parse(decodedJWT);
@@ -105,16 +97,22 @@ namespace FuelSDK
             }
             else
             {
+                // intru daca refreshState == null
                 RefreshToken();
                 organizationFind = true;
             }
 
             // Find the appropriate endpoint for the acccount
             var grSingleEndpoint = new ETEndpoint { AuthStub = this, Type = "soap" }.Get();
+
             if (grSingleEndpoint.Status && grSingleEndpoint.Results.Length == 1)
+            {
                 configSection.SoapEndPoint = ((ETEndpoint)grSingleEndpoint.Results[0]).URL;
+            }
             else
+            {
                 throw new Exception("Unable to determine stack using /platform/v1/endpoints: " + grSingleEndpoint.Message);
+            }
 
             // Create the SOAP binding for call with Oauth.
 
@@ -123,6 +121,11 @@ namespace FuelSDK
             SoapClient.ClientCredentials.UserName.Password = "*";
 
             // Find Organization Information
+            RetrieveBusinessUnitProperties(organizationFind);
+        }
+
+        private void RetrieveBusinessUnitProperties(bool organizationFind)
+        {
             if (organizationFind)
                 using (var scope = new OperationContextScope(SoapClient.InnerChannel))
                 {
@@ -146,6 +149,53 @@ namespace FuelSDK
                         Stack = GetStackFromSoapEndPoint(new Uri(configSection.SoapEndPoint));
                     }
                 }
+        }
+
+        private void ValidateRequiredConfigValues()
+        {
+            if (string.IsNullOrEmpty(configSection.ClientId) || string.IsNullOrEmpty(configSection.ClientSecret))
+            {
+                throw new Exception("clientId or clientSecret is null: Must be provided in config file or passed when instantiating ETClient");
+            }
+            if (string.IsNullOrEmpty(configSection.AuthenticationEndPoint))
+            {
+                throw new Exception("authEndPoint is null: Must be provided in config file or passed when instantiating ETClient");
+            }
+            if (string.IsNullOrEmpty(configSection.SoapEndPoint) || string.IsNullOrEmpty(configSection.RestEndPoint))
+            {
+                throw new Exception("soapEndPoint or restEndPoint is null: Must be provided in config file or passed when instantiating ETClient");
+            }
+        }
+
+        private void OverrideConfigValues(NameValueCollection parameters)
+        {
+            if (parameters == null)
+                return;
+
+            if (parameters.AllKeys.Contains("appSignature"))
+            {
+                configSection.AppSignature = parameters["appSignature"];
+            }
+            if (parameters.AllKeys.Contains("clientId"))
+            {
+                configSection.ClientId = parameters["clientId"];
+            }
+            if (parameters.AllKeys.Contains("clientSecret"))
+            {
+                configSection.ClientSecret = parameters["clientSecret"];
+            }
+            if (parameters.AllKeys.Contains("soapEndPoint"))
+            {
+                configSection.SoapEndPoint = parameters["soapEndPoint"];
+            }
+            if (parameters.AllKeys.Contains("authEndPoint"))
+            {
+                configSection.AuthenticationEndPoint = parameters["authEndPoint"];
+            }
+            if (parameters.AllKeys.Contains("restEndPoint"))
+            {
+                configSection.RestEndPoint = parameters["restEndPoint"];
+            }
         }
 
         private string DecodeJWT(string jwt, string key)
@@ -274,8 +324,6 @@ namespace FuelSDK
             }
             return new PostReturn(cleanedArray.ToArray());
         }
-
-
     }
 
     [Obsolete("ET_Client will be removed in future release. Use ETClient class instead.")]
@@ -295,5 +343,4 @@ namespace FuelSDK
             return new PostReturn(cleanedArray.ToArray());
         }
     }
-
 }

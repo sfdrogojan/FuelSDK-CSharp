@@ -65,10 +65,7 @@
     </None>
     <EmbeddedResource Include="ConfigFiles\allPropertiesSet.config" />
     <EmbeddedResource Include="ConfigFiles\empty.config" />
-    <EmbeddedResource Include="ConfigFiles\missingRequiredAppSignatureProperty.config" />
-    <EmbeddedResource Include="ConfigFiles\missingRequiredClientIdProperty.config" />
-    <EmbeddedResource Include="ConfigFiles\missingRequiredClientSecretProperty.config" />
-    <EmbeddedResource Include="ConfigFiles\requiredPropertiesOnly.config" />
+    <EmbeddedResource Include="ConfigFiles\noPropertiesSet.config" />
     <None Include="packages.config" />
     <None Include="App.config.transform">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

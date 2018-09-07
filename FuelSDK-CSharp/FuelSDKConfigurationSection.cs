@@ -12,7 +12,7 @@ namespace FuelSDK
         /// Gets or sets the app signature.
         /// </summary>
         /// <value>The app signature.</value>
-		[ConfigurationProperty("appSignature", IsRequired = true)]
+		[ConfigurationProperty("appSignature")]
 		public string AppSignature
 		{
 			get { return (string)this["appSignature"]; }
@@ -22,7 +22,7 @@ namespace FuelSDK
         /// Gets or sets the client identifier.
         /// </summary>
         /// <value>The client identifier.</value>
-		[ConfigurationProperty("clientId", IsRequired = true)]
+		[ConfigurationProperty("clientId")]
 		public string ClientId
 		{
 			get { return (string)this["clientId"]; }
@@ -32,7 +32,7 @@ namespace FuelSDK
         /// Gets or sets the client secret.
         /// </summary>
         /// <value>The client secret.</value>
-		[ConfigurationProperty("clientSecret", IsRequired = true)]
+		[ConfigurationProperty("clientSecret")]
 		public string ClientSecret
 		{
 			get { return (string)this["clientSecret"]; }
@@ -42,14 +42,14 @@ namespace FuelSDK
         /// Gets or sets the SOAP end point.
         /// </summary>
         /// <value>The SOAP end point.</value>
-		[ConfigurationProperty("soapEndPoint", DefaultValue = "https://webservice.s4.exacttarget.com/Service.asmx")]
-		public string SoapEndPoint
+		[ConfigurationProperty("soapEndPoint")]
+        public string SoapEndPoint
 		{
 			get { return (string)this["soapEndPoint"]; }
 			set { this["soapEndPoint"] = value; }
 		}
-		[ConfigurationProperty("authEndPoint", DefaultValue = "https://auth-qa.exacttargetapis.com/v1/requestToken?legacy=1")]
-		public string AuthenticationEndPoint
+		[ConfigurationProperty("authEndPoint")]
+        public string AuthenticationEndPoint
 		{
 			get { return (string)this["authEndPoint"]; }
 			set { this["authEndPoint"] = value; }
@@ -58,7 +58,7 @@ namespace FuelSDK
         /// Gets or sets the REST end point.
         /// </summary>
         /// <value>The REST end point.</value>
-        [ConfigurationProperty("restEndPoint", DefaultValue = "https://www.exacttargetapis.com")]
+        [ConfigurationProperty("restEndPoint")]
         public string RestEndPoint
         {
             get { return (string)this["restEndPoint"]; }
