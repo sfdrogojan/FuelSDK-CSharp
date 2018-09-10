@@ -67,10 +67,6 @@ namespace FuelSDK
             {
                 if (string.IsNullOrEmpty(configSection.AppSignature))
                 {
-                    throw new Exception("appSignature is null: Must be provided in config file or passed when instantiating ETClient");
-                }
-                if (string.IsNullOrEmpty(configSection.AppSignature))
-                {
                     throw new Exception("Unable to utilize JWT for SSO without appSignature: Must be provided in config file or passed when instantiating ETClient");
                 }
 
