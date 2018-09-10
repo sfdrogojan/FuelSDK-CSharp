@@ -42,10 +42,6 @@ namespace FuelSDK
             public string OrganizationId { get; set; }
             public string Stack { get; set; }
         }
-        //public ETClient()
-        //{
-
-        //}
         public ETClient(string jwt)
             : this(new NameValueCollection { { "jwt", jwt } }, null) { }
         public ETClient(NameValueCollection parameters = null, RefreshState refreshState = null)
@@ -69,7 +65,6 @@ namespace FuelSDK
             }
             else if (parameters != null && parameters.AllKeys.Contains("jwt") && !string.IsNullOrEmpty(parameters["jwt"]))
             {
-                // intru daca refreshState == null
                 if (string.IsNullOrEmpty(configSection.AppSignature))
                 {
                     throw new Exception("appSignature is null: Must be provided in config file or passed when instantiating ETClient");
@@ -97,7 +92,6 @@ namespace FuelSDK
             }
             else
             {
-                // intru daca refreshState == null
                 RefreshToken();
                 organizationFind = true;
             }
@@ -153,17 +147,25 @@ namespace FuelSDK
 
         private void ValidateRequiredConfigValues()
         {
-            if (string.IsNullOrEmpty(configSection.ClientId) || string.IsNullOrEmpty(configSection.ClientSecret))
+            if (string.IsNullOrEmpty(configSection.ClientId))
             {
-                throw new Exception("clientId or clientSecret is null: Must be provided in config file or passed when instantiating ETClient");
+                throw new Exception("clientId is null: Must be provided in config file or passed when instantiating ETClient");
+            }
+            if (string.IsNullOrEmpty(configSection.ClientSecret))
+            {
+                throw new Exception("clientSecret is null: Must be provided in config file or passed when instantiating ETClient");
             }
             if (string.IsNullOrEmpty(configSection.AuthenticationEndPoint))
             {
                 throw new Exception("authEndPoint is null: Must be provided in config file or passed when instantiating ETClient");
             }
-            if (string.IsNullOrEmpty(configSection.SoapEndPoint) || string.IsNullOrEmpty(configSection.RestEndPoint))
+            if (string.IsNullOrEmpty(configSection.SoapEndPoint))
             {
-                throw new Exception("soapEndPoint or restEndPoint is null: Must be provided in config file or passed when instantiating ETClient");
+                throw new Exception("soapEndPoint is null: Must be provided in config file or passed when instantiating ETClient");
+            }
+            if(string.IsNullOrEmpty(configSection.RestEndPoint))
+            {
+                throw new Exception("restEndPoint is null: Must be provided in config file or passed when instantiating ETClient");
             }
         }
 
