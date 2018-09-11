@@ -479,12 +479,14 @@ namespace FuelSDK
 				foreach (string urlProp in obj.URLProperties)
 					completeURL = completeURL.Replace("{" + urlProp + "}", string.Empty);
 
-			completeURL += "?access_token=" + obj.AuthStub.AuthToken;
-			if (obj.Page != 0)
-				completeURL += "&page=" + obj.Page.ToString();
+            //completeURL += "?access_token=" + obj.AuthStub.AuthToken;
+            if (obj.Page != 0)
+                completeURL += "?page=" + obj.Page.ToString();
 
-			var request = (HttpWebRequest)WebRequest.Create(completeURL.Trim());
-			request.Method = method;
+            var request = (HttpWebRequest)WebRequest.Create(completeURL.Trim());
+            //request.PreAuthenticate = true;
+            request.Headers.Add("Authorization", "Bearer " + obj.AuthStub.AuthToken);
+            request.Method = method;
 			request.ContentType = "application/json";
 			request.UserAgent = ETClient.SDKVersion;
 
