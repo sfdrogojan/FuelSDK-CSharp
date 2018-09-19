@@ -410,10 +410,8 @@ namespace FuelSDK
 			client.RefreshToken();
 			using (var scope = new OperationContextScope(client.SoapClient.InnerChannel))
 			{
-				// Add oAuth token to SOAP header.
-				XNamespace ns = "http://exacttarget.com";
-				var oauthElement = new XElement(ns + "oAuthToken", client.InternalAuthToken);
-				var xmlHeader = MessageHeader.CreateHeader("oAuth", "http://exacttarget.com", oauthElement);
+				// Add the access token to SOAP header.
+				var xmlHeader = MessageHeader.CreateHeader("fueloauth", "http://exacttarget.com", client.AuthToken);
 				OperationContext.Current.OutgoingMessageHeaders.Add(xmlHeader);
 
 				var httpRequest = new System.ServiceModel.Channels.HttpRequestMessageProperty();
@@ -426,16 +424,6 @@ namespace FuelSDK
 				Code = (Status ? 200 : 0);
 				MoreResults = (response.OverallStatus == "MoreDataAvailable");
 				Message = (response.OverallStatusMessage ?? string.Empty);
-
-				string r;
-				APIObject[] a;
-				var d = client.SoapClient.Retrieve(
-					new RetrieveRequest
-					{
-						ObjectType = "BusinessUnit",
-						Properties = new[] { "ID", "Name" }
-					}, out r, out a
-				);
 
 				return response.Results;
 			}
