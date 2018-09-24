@@ -78,7 +78,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssetType.cs" />
     <Compile Include="ConfigUtil.cs" />
+    <Compile Include="ETAsset.cs" />
     <Compile Include="ETClient.cs" />
     <Compile Include="ExactTargetSOAP.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
