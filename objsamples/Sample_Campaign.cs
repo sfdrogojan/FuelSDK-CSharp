@@ -5,7 +5,7 @@ namespace objsamples
 {
     partial class Tester
     {
-        static void TestET_Campaign()
+        static void TestETCampaign()
         {
             var myclient = new ETClient();
             var idOfpostCampaign = string.Empty;

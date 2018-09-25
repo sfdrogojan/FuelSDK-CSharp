@@ -28,7 +28,7 @@ namespace objsamples
             switch (objectName.ToUpper())
             {
                 case "CAMPAIGN":
-                    TestET_Campaign();
+                    TestETCampaign();
                     break;
                 case "CONTENTAREA":
                     TestET_ContentArea();
