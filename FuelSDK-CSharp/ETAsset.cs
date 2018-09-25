@@ -24,7 +24,7 @@ namespace FuelSDK
         /// </summary>
         public ETAsset()
         {
-            Endpoint = ConfigUtil.GetFuelSDKConfigSection().RestEndPoint + "/asset/v1/content/assets{ID}";
+            Endpoint = ConfigUtil.GetFuelSDKConfigSection().RestEndPoint + "/asset/v1/content/assets/{ID}";
             URLProperties = new[] { "ID" };
             RequiredURLProperties = new string[0];
         }
@@ -44,7 +44,7 @@ namespace FuelSDK
             if (obj["name"] != null)
                 Name = CleanRestValue(obj["name"]);
             if (obj["assetType"] != null)
-                AssetType = JsonConvert.DeserializeObject<AssetType>(CleanRestValue(obj["assetType"]));
+                AssetType = JsonConvert.DeserializeObject<AssetType>(obj["assetType"].ToString());
         }
 
         /// <summary>

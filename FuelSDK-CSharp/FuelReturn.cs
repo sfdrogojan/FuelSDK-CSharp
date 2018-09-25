@@ -500,7 +500,7 @@ namespace FuelSDK
 				using (var reader = new StreamReader(dataStream))
 				{
 					Code = (int)response.StatusCode;
-					Status = (response.StatusCode == HttpStatusCode.OK);
+					Status = (response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.Created);
 					MoreResults = false;
 					Message = (Status ? string.Empty : response.ToString());
 					return (Status ? reader.ReadToEnd() : null);
