@@ -131,3 +131,4 @@ FuelSDK-CSharp/fixer.awk
 FuelSDK-CSharp.v12.suo
 FuelSDK-Test/App.config
 /.vs/
+/FuelSDK.Test.Nuget/App.config

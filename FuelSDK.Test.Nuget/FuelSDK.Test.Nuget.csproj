@@ -1,0 +1,182 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{F185212A-6BE3-45F3-B22E-49197FA36CBF}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>FuelSDK.Test.Nuget</RootNamespace>
+    <AssemblyName>FuelSDK.Test.Nuget</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
+    <IsCodedUITest>False</IsCodedUITest>
+    <TestProjectType>UnitTest</TestProjectType>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="FuelSDK, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SFMC.FuelSDK.1.0.0\lib\net40\FuelSDK.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="JWT, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\JWT.3.0.0\lib\net35\JWT.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="nunit.framework, Version=3.7.1.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\NUnit.3.7.1\lib\net40\nunit.framework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NUnit3.TestAdapter">
+      <HintPath>..\packages\NUnit3TestAdapter.3.7.0\tools\NUnit3.TestAdapter.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.configuration" />
+  </ItemGroup>
+  <Choose>
+    <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
+      <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+      </ItemGroup>
+    </When>
+    <Otherwise />
+  </Choose>
+  <ItemGroup>
+    <Compile Include="..\FuelSDK-Test\ETCampaignAssetTest.cs">
+      <Link>ETCampaignAssetTest.cs</Link>
+    </Compile>
+    <Compile Include="..\FuelSDK-Test\ETCampaignTest.cs">
+      <Link>ETCampaignTest.cs</Link>
+    </Compile>
+    <Compile Include="..\FuelSDK-Test\ETContentAreaTest.cs">
+      <Link>ETContentAreaTest.cs</Link>
+    </Compile>
+    <Compile Include="..\FuelSDK-Test\ETDataExtensionColumnTest.cs">
+      <Link>ETDataExtensionColumnTest.cs</Link>
+    </Compile>
+    <Compile Include="..\FuelSDK-Test\ETDataExtensionRowTest.cs">
+      <Link>ETDataExtensionRowTest.cs</Link>
+    </Compile>
+    <Compile Include="..\FuelSDK-Test\ETDataExtensionTest.cs">
+      <Link>ETDataExtensionTest.cs</Link>
+    </Compile>
+    <Compile Include="..\FuelSDK-Test\ETEmailSendDefinitionTest.cs">
+      <Link>ETEmailSendDefinitionTest.cs</Link>
+    </Compile>
+    <Compile Include="..\FuelSDK-Test\ETEmailTest.cs">
+      <Link>ETEmailTest.cs</Link>
+    </Compile>
+    <Compile Include="..\FuelSDK-Test\ETFolderTest.cs">
+      <Link>ETFolderTest.cs</Link>
+    </Compile>
+    <Compile Include="..\FuelSDK-Test\ETImportDefinitionTest.cs">
+      <Link>ETImportDefinitionTest.cs</Link>
+    </Compile>
+    <Compile Include="..\FuelSDK-Test\ETListTest.cs">
+      <Link>ETListTest.cs</Link>
+    </Compile>
+    <Compile Include="..\FuelSDK-Test\ETOpenEventTest.cs">
+      <Link>ETOpenEventTest.cs</Link>
+    </Compile>
+    <Compile Include="..\FuelSDK-Test\ETQueryDefinitionTest.cs">
+      <Link>ETQueryDefinitionTest.cs</Link>
+    </Compile>
+    <Compile Include="..\FuelSDK-Test\ETSentEventTest.cs">
+      <Link>ETSentEventTest.cs</Link>
+    </Compile>
+    <Compile Include="..\FuelSDK-Test\ETSubscriberTest.cs">
+      <Link>ETSubscriberTest.cs</Link>
+    </Compile>
+    <Compile Include="..\FuelSDK-Test\ETTriggeredSendDefinitionTest.cs">
+      <Link>ETTriggeredSendDefinitionTest.cs</Link>
+    </Compile>
+    <Compile Include="..\FuelSDK-Test\ETUnsubEventTest.cs">
+      <Link>ETUnsubEventTest.cs</Link>
+    </Compile>
+    <Compile Include="..\FuelSDK-Test\FuelSDKConfigurationSectionTest.cs">
+      <Link>FuelSDKConfigurationSectionTest.cs</Link>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <None Include="..\FuelSDK-Test\ConfigFiles\allPropertiesSet.config">
+      <Link>ConfigFiles\allPropertiesSet.config</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="..\FuelSDK-Test\ConfigFiles\empty.config">
+      <Link>ConfigFiles\empty.config</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="..\FuelSDK-Test\ConfigFiles\missingRequiredAppSignatureProperty.config">
+      <Link>ConfigFiles\missingRequiredAppSignatureProperty.config</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="..\FuelSDK-Test\ConfigFiles\missingRequiredClientIdProperty.config">
+      <Link>ConfigFiles\missingRequiredClientIdProperty.config</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="..\FuelSDK-Test\ConfigFiles\missingRequiredClientSecretProperty.config">
+      <Link>ConfigFiles\missingRequiredClientSecretProperty.config</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="..\FuelSDK-Test\ConfigFiles\requiredPropertiesOnly.config">
+      <Link>ConfigFiles\requiredPropertiesOnly.config</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Choose>
+    <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
+      <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.QualityTools.CodedUITestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="Microsoft.VisualStudio.TestTools.UITest.Common, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="Microsoft.VisualStudio.TestTools.UITest.Extension, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="Microsoft.VisualStudio.TestTools.UITesting, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+          <Private>False</Private>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
