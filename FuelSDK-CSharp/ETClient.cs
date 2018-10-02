@@ -165,7 +165,6 @@ namespace FuelSDK
         {
             return new CustomBinding(new BindingElementCollection
             {
-                //SecurityBindingElement.CreateUserNameOverTransportBindingElement(),
                 new TextMessageEncodingBindingElement
                 {
                     MessageVersion = MessageVersion.Soap12WSAddressingAugust2004,
@@ -231,7 +230,7 @@ namespace FuelSDK
 
             // Parse the response
             var parsedResponse = JObject.Parse(responseFromServer);
-            InternalAuthToken = parsedResponse["legacyToken"].Value<string>().Trim();
+            InternalAuthToken = parsedResponse["legacyToken"] == null ? string.Empty : parsedResponse["legacyToken"].Value<string>().Trim();
             AuthToken = parsedResponse["accessToken"].Value<string>().Trim();
             AuthTokenExpiration = DateTime.Now.AddSeconds(int.Parse(parsedResponse["expiresIn"].Value<string>().Trim()));
             RefreshKey = parsedResponse["refreshToken"].Value<string>().Trim();
