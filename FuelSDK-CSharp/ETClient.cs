@@ -5,12 +5,9 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Xml.Linq;
-using System.Xml.Serialization;
-using System.Xml.XPath;
 using JWT;
 using JWT.Serializers;
 using Newtonsoft.Json.Linq;
@@ -23,7 +20,7 @@ namespace FuelSDK
     /// </summary>
     public class ETClient
     {
-        public const string SDKVersion = "FuelSDX-C#-v1.0.0";
+        public const string SDKVersion = "FuelSDK-C#-v1.1.0";
         private FuelSDKConfigurationSection configSection;
         public string AuthToken { get; private set; }
         public SoapClient SoapClient { get; private set; }
