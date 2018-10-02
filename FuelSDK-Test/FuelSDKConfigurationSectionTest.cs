@@ -45,8 +45,7 @@ namespace FuelSDK.Test
         public void MissingSoapEndPointPropertyFromConfigSection()
         {
             FuelSDKConfigurationSection section = GetCustomConfigurationSectionFromConfigFile(requiredPropertiesOnlyConfigFileName);
-            var attribute = section.GetType().GetProperty("SoapEndPoint").GetCustomAttributes(typeof(ConfigurationPropertyAttribute), false).Single() as ConfigurationPropertyAttribute;
-            Assert.AreEqual(section.SoapEndPoint, attribute.DefaultValue);
+            Assert.AreEqual(string.Empty, section.SoapEndPoint);
         }
 
         [Test()]
