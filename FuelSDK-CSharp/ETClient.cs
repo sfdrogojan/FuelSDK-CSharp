@@ -106,12 +106,7 @@ namespace FuelSDK
                 organizationFind = true;
             }
 
-            // Find the appropriate endpoint for the acccount
-            var grSingleEndpoint = new ETEndpoint { AuthStub = this, Type = "soap" }.Get();
-            if (grSingleEndpoint.Status && grSingleEndpoint.Results.Length == 1)
-                configSection.SoapEndPoint = ((ETEndpoint)grSingleEndpoint.Results[0]).URL;
-            else
-                throw new Exception("Unable to determine stack using /platform/v1/endpoints: " + grSingleEndpoint.Message);
+            FetchSoapEndpoint();
 
             // Create the SOAP binding for call with Oauth.
 
@@ -139,6 +134,19 @@ namespace FuelSDK
                         Stack = GetStackFromSoapEndPoint(new Uri(configSection.SoapEndPoint));
                     }
                 }
+        }
+
+        private void FetchSoapEndpoint()
+        {
+            if (string.IsNullOrEmpty(configSection.SoapEndPoint))
+            {
+                // Find the appropriate endpoint for the acccount
+                var grSingleEndpoint = new ETEndpoint { AuthStub = this, Type = "soap" }.Get();
+                if (grSingleEndpoint.Status && grSingleEndpoint.Results.Length == 1)
+                    configSection.SoapEndPoint = ((ETEndpoint)grSingleEndpoint.Results[0]).URL;
+                else
+                    throw new Exception("Unable to determine stack using /platform/v1/endpoints: " + grSingleEndpoint.Message);
+            }
         }
 
         private string DecodeJWT(string jwt, string key)

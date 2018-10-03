@@ -42,7 +42,7 @@ namespace FuelSDK
         /// Gets or sets the SOAP end point.
         /// </summary>
         /// <value>The SOAP end point.</value>
-		[ConfigurationProperty("soapEndPoint", DefaultValue = "https://webservice.s4.exacttarget.com/Service.asmx")]
+		[ConfigurationProperty("soapEndPoint")]
 		public string SoapEndPoint
 		{
 			get { return (string)this["soapEndPoint"]; }
