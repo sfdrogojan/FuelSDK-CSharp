@@ -48,7 +48,11 @@ namespace FuelSDK
 			get { return (string)this["soapEndPoint"]; }
 			set { this["soapEndPoint"] = value; }
 		}
-		[ConfigurationProperty("authEndPoint", DefaultValue = "https://auth.exacttargetapis.com/v1/requestToken?legacy=1")]
+        /// <summary>
+        /// Gets or sets the authentification end point.
+        /// </summary>
+        /// <value>The authentification end point.</value>
+        [ConfigurationProperty("authEndPoint", DefaultValue = "https://auth-qa3s1.exacttargetapis.com/v1/requestToken")]
 		public string AuthenticationEndPoint
 		{
 			get { return (string)this["authEndPoint"]; }
@@ -58,7 +62,7 @@ namespace FuelSDK
         /// Gets or sets the REST end point.
         /// </summary>
         /// <value>The REST end point.</value>
-        [ConfigurationProperty("restEndPoint", DefaultValue = "https://www.exacttargetapis.com")]
+        [ConfigurationProperty("restEndPoint", DefaultValue = "https://www-qa3.exacttargetapis.com/platform/v1/endpoints")]
         public string RestEndPoint
         {
             get { return (string)this["restEndPoint"]; }

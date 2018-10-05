@@ -30,8 +30,11 @@ namespace FuelSDK
         public JObject Jwt { get; private set; }
         public string EnterpriseId { get; private set; }
         public string OrganizationId { get; private set; }
-        public string Stack { get; private set; }
+        private string stack;
+        private bool stackIsSet = false;
+        public string Stack { get { return getStackKey(); } private set { this.stack = value; } }
         private string authEndPoint { get; set; }
+        private string defaultSoapEndPoint { get { return "https://webservice.exacttarget.com/service.asmx"; } }
         public class RefreshState
         {
             public string RefreshKey { get; set; }
@@ -78,6 +81,7 @@ namespace FuelSDK
                 EnterpriseId = refreshState.EnterpriseId;
                 OrganizationId = refreshState.OrganizationId;
                 Stack = refreshState.Stack;
+                stackIsSet = true;
                 RefreshToken();
             }
             else if (parameters != null && parameters.AllKeys.Contains("jwt") && !string.IsNullOrEmpty(parameters["jwt"]))
@@ -98,6 +102,7 @@ namespace FuelSDK
                     EnterpriseId = orgPart["enterpriseId"].Value<string>().Trim();
                     OrganizationId = orgPart["id"].Value<string>().Trim();
                     Stack = orgPart["stackKey"].Value<string>().Trim();
+                    stackIsSet = true;
                 }
             }
             else
@@ -131,9 +136,18 @@ namespace FuelSDK
                     {
                         EnterpriseId = results[0].Client.EnterpriseID.ToString();
                         OrganizationId = results[0].ID.ToString();
-                        Stack = GetStackFromSoapEndPoint(new Uri(configSection.SoapEndPoint));
                     }
                 }
+        }
+
+        private string fetchRestAuthTSE()
+        {
+            // Find the REST authentification TSE:
+            var grSingleEndpoint = new ETEndpoint { AuthStub = this, Type = "restAuth" }.Get();
+            if (grSingleEndpoint.Status && grSingleEndpoint.Results.Length == 1)
+                return ((ETEndpoint)grSingleEndpoint.Results[0]).URL;
+            else
+                throw new Exception("REST authentification tenant specific endpoint could not be determined");
         }
 
         private void FetchSoapEndpoint()
@@ -145,7 +159,23 @@ namespace FuelSDK
                 if (grSingleEndpoint.Status && grSingleEndpoint.Results.Length == 1)
                     configSection.SoapEndPoint = ((ETEndpoint)grSingleEndpoint.Results[0]).URL;
                 else
-                    throw new Exception("Unable to determine stack using /platform/v1/endpoints: " + grSingleEndpoint.Message);
+                    configSection.SoapEndPoint = this.defaultSoapEndPoint;
+            }
+        }
+        private string getStackKey()
+        {
+            if (stackIsSet)
+            {
+                return Stack;
+            }
+            else
+            {
+                // get restAuth TSE:
+                string restAuthTSE = fetchRestAuthTSE();
+                // get stackKey:
+                var userInfo = new UserInfo(restAuthTSE) { AuthStub = this }.Get();
+
+                return ((UserInfo)userInfo.Results[0]).StackKey;
             }
         }
 
@@ -159,14 +189,6 @@ namespace FuelSDK
 
             var json = decoder.Decode(jwt, key, true);
             return json;
-        }
-
-        private string GetStackFromSoapEndPoint(Uri uri)
-        {
-            var parts = uri.Host.Split('.');
-            if (parts.Length < 2 || !parts[0].Equals("webservice", StringComparison.OrdinalIgnoreCase))
-                throw new Exception("not exacttarget.com");
-            return (parts[1] == "exacttarget" ? "s1" : parts[1].ToLower());
         }
 
         private static Binding GetSoapBinding()
