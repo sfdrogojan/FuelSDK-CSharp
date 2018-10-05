@@ -24,7 +24,11 @@ namespace FuelSDK.Test
         [SetUp]
         public void CampaignSetup()
         {
-			campaignName = Guid.NewGuid().ToString();
+            UserInfo userinfo = new UserInfo();
+            userinfo.AuthStub = client;
+            var returnValue = userinfo.Get();
+            var ui = (UserInfo)returnValue.Results[0];
+            campaignName = Guid.NewGuid().ToString();
 			campaignDesc = "Campaign created using C# automated test case";
 
 			var campObj = new ETCampaign
