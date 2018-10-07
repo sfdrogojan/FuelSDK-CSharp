@@ -32,7 +32,7 @@ namespace FuelSDK
         public string OrganizationId { get; private set; }
         private string stack;
         private bool stackIsSet = false;
-        public string Stack { get { return getStackKey(); } private set { this.stack = value; } }
+        public string Stack { get { return GetStackKey(); } private set { this.stack = value; } }
         private string authEndPoint { get; set; }
         private string defaultSoapEndPoint { get { return "https://webservice.exacttarget.com/service.asmx"; } }
         public class RefreshState
@@ -140,7 +140,7 @@ namespace FuelSDK
                 }
         }
 
-        private string fetchRestAuthTSE()
+        private string FetchRestAuthTSE()
         {
             // Find the REST authentification TSE:
             var grSingleEndpoint = new ETEndpoint { AuthStub = this, Type = "restAuth" }.Get();
@@ -162,7 +162,7 @@ namespace FuelSDK
                     configSection.SoapEndPoint = this.defaultSoapEndPoint;
             }
         }
-        private string getStackKey()
+        private string GetStackKey()
         {
             if (stackIsSet)
             {
@@ -171,11 +171,19 @@ namespace FuelSDK
             else
             {
                 // get restAuth TSE:
-                string restAuthTSE = fetchRestAuthTSE();
+                string restAuthTSE = FetchRestAuthTSE();
                 // get stackKey:
                 var userInfo = new UserInfo(restAuthTSE) { AuthStub = this }.Get();
+                string stackKey = ((UserInfo)userInfo.Results[0]).StackKey;
 
-                return ((UserInfo)userInfo.Results[0]).StackKey;
+                if (!string.IsNullOrEmpty(stackKey))
+                {
+                    return stackKey;
+                }
+                else
+                {
+                    throw new Exception("The stack key could not be determined");
+                }
             }
         }
 
