@@ -7,7 +7,6 @@ using System.Linq;
 using System.Net;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
-using System.Xml.Linq;
 using JWT;
 using JWT.Serializers;
 using Newtonsoft.Json.Linq;
@@ -21,6 +20,8 @@ namespace FuelSDK
     public class ETClient
     {
         public const string SDKVersion = "FuelSDK-C#-v1.1.0";
+        private const string defaultSoapEndpoint = "https://webservice.exacttarget.com/service.asmx";
+
         private FuelSDKConfigurationSection configSection;
         public string AuthToken { get; private set; }
         public SoapClient SoapClient { get; private set; }
@@ -31,15 +32,14 @@ namespace FuelSDK
         public string EnterpriseId { get; private set; }
         public string OrganizationId { get; private set; }
 
-        private string stack;
-        public string Stack { get { return GetStackKey(); } private set { this.stack = value; } }
+        private static string stack;
+        public string Stack { get { return GetStackKey(); } private set { stack = value; } }
 
-        private static long soapEndPointExpiration = 0;
-        private static String fetchedSoapEndpoint = null;
-        private const long cacheDurationInMillis = 1000 * 60 * 10;  // 10 minutes
+        private static DateTime soapEndPointExpiration;
+        private static DateTime stackKeyExpiration;
+        private static string fetchedSoapEndpoint;
+        private const long cacheDurationInMinutes = 10;
 
-        private string authEndPoint { get; set; }
-        private string defaultSoapEndPoint { get { return "https://webservice.exacttarget.com/service.asmx"; } }
         public class RefreshState
         {
             public string RefreshKey { get; set; }
@@ -117,7 +117,6 @@ namespace FuelSDK
             FetchSoapEndpoint();
 
             // Create the SOAP binding for call with Oauth.
-
             SoapClient = new SoapClient(GetSoapBinding(), new EndpointAddress(new Uri(configSection.SoapEndPoint)));
 
             // Find Organization Information
@@ -145,12 +144,11 @@ namespace FuelSDK
 
         private string FetchRestAuth()
         {
-            // Find the REST authentification TSE:
-            var grSingleEndpoint = new ETEndpoint { AuthStub = this, Type = "restAuth" }.Get();
-            if (grSingleEndpoint.Status && grSingleEndpoint.Results.Length == 1)
-                return ((ETEndpoint)grSingleEndpoint.Results[0]).URL;
+            var returnedRestAuthEndpoint = new ETEndpoint { AuthStub = this, Type = "restAuth" }.Get();
+            if (returnedRestAuthEndpoint.Status && returnedRestAuthEndpoint.Results.Length == 1)
+                return ((ETEndpoint)returnedRestAuthEndpoint.Results[0]).URL;
             else
-                throw new Exception("REST authentification tenant specific endpoint could not be determined");
+                throw new Exception("REST auth endpoint could not be determined");
         }
 
         private void FetchSoapEndpoint()
@@ -159,7 +157,7 @@ namespace FuelSDK
             {
                 try
                 {
-                    if (fetchedSoapEndpoint == null || soapEndPointExpiration - DateTime.Now.Millisecond < 0)
+                    if (fetchedSoapEndpoint == null || DateTime.Now > soapEndPointExpiration)
                     {
                         var grSingleEndpoint = new ETEndpoint { AuthStub = this, Type = "soap" }.Get();
                         if (grSingleEndpoint.Status && grSingleEndpoint.Results.Length == 1)
@@ -167,44 +165,45 @@ namespace FuelSDK
                             // Find the appropriate endpoint for the acccount
                             configSection.SoapEndPoint = ((ETEndpoint)grSingleEndpoint.Results[0]).URL;
                             fetchedSoapEndpoint = configSection.SoapEndPoint;
-                            soapEndPointExpiration = DateTime.Now.Millisecond + cacheDurationInMillis;
+                            soapEndPointExpiration = DateTime.Now.AddMinutes(cacheDurationInMinutes);
                         }
                         else
-                            configSection.SoapEndPoint = this.defaultSoapEndPoint;
+                            configSection.SoapEndPoint = defaultSoapEndpoint;
                     }
                     else
                     {
                         configSection.SoapEndPoint = fetchedSoapEndpoint;
                     }
                 }
-                catch(Exception ex)
+                catch
                 {
-                    configSection.SoapEndPoint = this.defaultSoapEndPoint;
+                    configSection.SoapEndPoint = defaultSoapEndpoint;
                 }  
             }
         }
         private string GetStackKey()
         {
-            if (!string.IsNullOrEmpty(Stack))
+            if (stack == null || DateTime.Now > stackKeyExpiration)
             {
-                return Stack;
-            }
-            else
-            {
-                // get restAuth TSE:
                 string restAuth = FetchRestAuth();
-                // get stackKey:
+
                 var userInfo = new UserInfo(restAuth) { AuthStub = this }.Get();
                 string stackKey = ((UserInfo)userInfo.Results[0]).StackKey;
 
                 if (!string.IsNullOrEmpty(stackKey))
                 {
-                    return stackKey;
+                    stack = stackKey;
+                    stackKeyExpiration = DateTime.Now.AddMinutes(cacheDurationInMinutes);
+                    return stack;
                 }
                 else
                 {
                     throw new Exception("The stack key could not be determined");
                 }
+            }
+            else
+            {
+                return stack;
             }
         }
 
