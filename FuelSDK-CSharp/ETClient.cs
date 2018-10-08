@@ -30,9 +30,14 @@ namespace FuelSDK
         public JObject Jwt { get; private set; }
         public string EnterpriseId { get; private set; }
         public string OrganizationId { get; private set; }
+
         private string stack;
-        private bool stackIsSet = false;
         public string Stack { get { return GetStackKey(); } private set { this.stack = value; } }
+
+        private static long soapEndPointExpiration = 0;
+        private static String fetchedSoapEndpoint = null;
+        private const long cacheDurationInMillis = 1000 * 60 * 10;  // 10 minutes
+
         private string authEndPoint { get; set; }
         private string defaultSoapEndPoint { get { return "https://webservice.exacttarget.com/service.asmx"; } }
         public class RefreshState
@@ -81,7 +86,6 @@ namespace FuelSDK
                 EnterpriseId = refreshState.EnterpriseId;
                 OrganizationId = refreshState.OrganizationId;
                 Stack = refreshState.Stack;
-                stackIsSet = true;
                 RefreshToken();
             }
             else if (parameters != null && parameters.AllKeys.Contains("jwt") && !string.IsNullOrEmpty(parameters["jwt"]))
@@ -102,7 +106,6 @@ namespace FuelSDK
                     EnterpriseId = orgPart["enterpriseId"].Value<string>().Trim();
                     OrganizationId = orgPart["id"].Value<string>().Trim();
                     Stack = orgPart["stackKey"].Value<string>().Trim();
-                    stackIsSet = true;
                 }
             }
             else
@@ -140,7 +143,7 @@ namespace FuelSDK
                 }
         }
 
-        private string FetchRestAuthTSE()
+        private string FetchRestAuth()
         {
             // Find the REST authentification TSE:
             var grSingleEndpoint = new ETEndpoint { AuthStub = this, Type = "restAuth" }.Get();
@@ -154,26 +157,44 @@ namespace FuelSDK
         {
             if (string.IsNullOrEmpty(configSection.SoapEndPoint))
             {
-                // Find the appropriate endpoint for the acccount
-                var grSingleEndpoint = new ETEndpoint { AuthStub = this, Type = "soap" }.Get();
-                if (grSingleEndpoint.Status && grSingleEndpoint.Results.Length == 1)
-                    configSection.SoapEndPoint = ((ETEndpoint)grSingleEndpoint.Results[0]).URL;
-                else
+                try
+                {
+                    if (fetchedSoapEndpoint == null || soapEndPointExpiration - DateTime.Now.Millisecond < 0)
+                    {
+                        var grSingleEndpoint = new ETEndpoint { AuthStub = this, Type = "soap" }.Get();
+                        if (grSingleEndpoint.Status && grSingleEndpoint.Results.Length == 1)
+                        {
+                            // Find the appropriate endpoint for the acccount
+                            configSection.SoapEndPoint = ((ETEndpoint)grSingleEndpoint.Results[0]).URL;
+                            fetchedSoapEndpoint = configSection.SoapEndPoint;
+                            soapEndPointExpiration = DateTime.Now.Millisecond + cacheDurationInMillis;
+                        }
+                        else
+                            configSection.SoapEndPoint = this.defaultSoapEndPoint;
+                    }
+                    else
+                    {
+                        configSection.SoapEndPoint = fetchedSoapEndpoint;
+                    }
+                }
+                catch(Exception ex)
+                {
                     configSection.SoapEndPoint = this.defaultSoapEndPoint;
+                }  
             }
         }
         private string GetStackKey()
         {
-            if (stackIsSet)
+            if (!string.IsNullOrEmpty(Stack))
             {
                 return Stack;
             }
             else
             {
                 // get restAuth TSE:
-                string restAuthTSE = FetchRestAuthTSE();
+                string restAuth = FetchRestAuth();
                 // get stackKey:
-                var userInfo = new UserInfo(restAuthTSE) { AuthStub = this }.Get();
+                var userInfo = new UserInfo(restAuth) { AuthStub = this }.Get();
                 string stackKey = ((UserInfo)userInfo.Results[0]).StackKey;
 
                 if (!string.IsNullOrEmpty(stackKey))

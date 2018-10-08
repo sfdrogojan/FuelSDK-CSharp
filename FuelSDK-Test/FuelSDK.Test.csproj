@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="ETCampaignAssetTest.cs" />
     <Compile Include="ETCampaignTest.cs" />
+    <Compile Include="ETClientTest.cs" />
     <Compile Include="ETContentAreaTest.cs" />
     <Compile Include="ETDataExtensionColumnTest.cs" />
     <Compile Include="ETDataExtensionRowTest.cs" />
