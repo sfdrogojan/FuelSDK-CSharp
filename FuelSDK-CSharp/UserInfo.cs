@@ -1,8 +1,4 @@
 ﻿using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace FuelSDK
 {
@@ -10,25 +6,17 @@ namespace FuelSDK
     {
         public string StackKey { get; set; }
         /// <summary>
-        /// Gets or sets the URL.
-        /// </summary>
-        /// <value>The URL.</value>
-		public string URL { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="T:FuelSDK.UserInfo"/> class.
-        /// </summary
-        public UserInfo()
+        /// </summary>
+        /// <param name="authRestEndpoint">The auth rest endpoint.</param>
+		public UserInfo(string authRestEndpoint)
         {
-
-        }
-		public UserInfo(string authRestTSE)
-        {
-            Endpoint = authRestTSE + "/v2/userinfo";
+            Endpoint = authRestEndpoint + "/v2/userinfo";
             URLProperties = new string[0];
             RequiredURLProperties = new string[0];
         }
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:FuelSDK.ETEndpoint"/> class.
+        /// Initializes a new instance of the <see cref="T:FuelSDK.UserInfo"/> class.
         /// </summary>
         /// <param name="obj">Javascript Object.</param>
 		public UserInfo(JObject obj)
