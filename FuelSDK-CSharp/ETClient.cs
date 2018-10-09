@@ -20,7 +20,7 @@ namespace FuelSDK
     public class ETClient
     {
         public const string SDKVersion = "FuelSDK-C#-v1.1.0";
-        private const string defaultSoapEndpoint = "https://webservice.exacttarget.com/service.asmx";
+        private const string defaultSoapEndpoint = "https://webservice.s4.exacttarget.com/Service.asmx";
 
         private FuelSDKConfigurationSection configSection;
         public string AuthToken { get; private set; }
