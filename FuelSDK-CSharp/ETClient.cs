@@ -288,7 +288,6 @@ namespace FuelSDK
 
             // Parse the response
             var parsedResponse = JObject.Parse(responseFromServer);
-            InternalAuthToken = parsedResponse["legacyToken"] == null ? string.Empty : parsedResponse["legacyToken"].Value<string>().Trim();
             AuthToken = parsedResponse["accessToken"].Value<string>().Trim();
             AuthTokenExpiration = DateTime.Now.AddSeconds(int.Parse(parsedResponse["expiresIn"].Value<string>().Trim()));
             RefreshKey = parsedResponse["refreshToken"].Value<string>().Trim();
