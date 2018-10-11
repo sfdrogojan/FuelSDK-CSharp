@@ -9,9 +9,9 @@ namespace FuelSDK
         /// Initializes a new instance of the <see cref="T:FuelSDK.UserInfo"/> class.
         /// </summary>
         /// <param name="authRestEndpoint">The auth rest endpoint.</param>
-		public UserInfo(string authRestEndpoint)
+		public UserInfo(string authRestEndpoint, bool stackKeyPropertyAccess = false)
         {
-            Endpoint = authRestEndpoint + "/v2/userinfo";
+            Endpoint = authRestEndpoint + "/v2/userinfo" + (stackKeyPropertyAccess ? "?stackKeyPropertyAccess=1" : string.Empty);
             URLProperties = new string[0];
             RequiredURLProperties = new string[0];
         }

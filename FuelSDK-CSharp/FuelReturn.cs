@@ -467,7 +467,7 @@ namespace FuelSDK
 				foreach (string urlProp in obj.URLProperties)
 					completeURL = completeURL.Replace("{" + urlProp + "}", string.Empty);
 
-            if (obj.Page != 0)
+            if (obj.Page.HasValue && obj.Page.Value > 0)
                 completeURL += "?page=" + obj.Page.ToString();
 
             var request = (HttpWebRequest)WebRequest.Create(completeURL.Trim());
