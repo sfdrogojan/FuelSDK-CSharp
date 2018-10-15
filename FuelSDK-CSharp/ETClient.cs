@@ -34,7 +34,7 @@ namespace FuelSDK
         public string OrganizationId { get; private set; }
 
         private static string stack;
-        public string Stack { get { return GetStackKey(); } private set { stack = value; } }
+        public string Stack { get { return stack; /*GetStackKey();*/ } private set { stack = value; } }
 
         private static DateTime soapEndPointExpiration;
         private static DateTime stackKeyExpiration;
@@ -143,11 +143,12 @@ namespace FuelSDK
                     {
                         EnterpriseId = results[0].Client.EnterpriseID.ToString();
                         OrganizationId = results[0].ID.ToString();
+                        Stack = StackKey.Instance(this).Get(long.Parse(EnterpriseId));
                     }
                 }
         }
 
-        private string FetchRestAuth()
+        internal string FetchRestAuth()
         {
             var returnedRestAuthEndpoint = new ETEndpoint { AuthStub = this, Type = "restAuth" }.Get();
             if (returnedRestAuthEndpoint.Status && returnedRestAuthEndpoint.Results.Length == 1)
