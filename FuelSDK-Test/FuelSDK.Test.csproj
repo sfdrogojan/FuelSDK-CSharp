@@ -40,6 +40,8 @@
     <Reference Include="System.Configuration" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AuthEndpointUriBuilderTest.cs" />
+    <Compile Include="CustomConfigSectionBasedTest.cs" />
     <Compile Include="ETCampaignAssetTest.cs" />
     <Compile Include="ETCampaignTest.cs" />
     <Compile Include="ETClientTest.cs" />
@@ -63,6 +65,18 @@
   <ItemGroup>
     <None Include="App.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="ConfigFiles\authEndpointWithMultipleQueryParamsIncludingLegacyParam.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="ConfigFiles\authEndpointWithMultipleQueryParamsButMissingLegacyParam.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="ConfigFiles\authEndpointWithLegacyQueryParam.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="ConfigFiles\authEndpointMissingLegacyQueryParam.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="ConfigFiles\allPropertiesSet.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

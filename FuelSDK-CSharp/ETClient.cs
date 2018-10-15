@@ -261,10 +261,10 @@ namespace FuelSDK
                 return;
 
             // Get an internalAuthToken using clientId and clientSecret
-            var strURL = configSection.AuthenticationEndPoint;
+            var authEndpoint = new AuthEndpointUriBuilder(configSection).Build();
 
             // Build the request
-            var request = (HttpWebRequest)WebRequest.Create(strURL.Trim());
+            var request = (HttpWebRequest)WebRequest.Create(authEndpoint.Trim());
             request.Method = "POST";
             request.ContentType = "application/json";
             request.UserAgent = SDKVersion;
