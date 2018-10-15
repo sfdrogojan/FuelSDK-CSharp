@@ -153,37 +153,30 @@ namespace FuelSDK
 
         private void FetchSoapEndpoint()
         {
-            if (string.IsNullOrEmpty(configSection.SoapEndPoint))
+            if (string.IsNullOrEmpty(configSection.SoapEndPoint) || (DateTime.Now > soapEndPointExpiration && fetchedSoapEndpoint != null))
             {
                 try
                 {
-                    if (fetchedSoapEndpoint == null || DateTime.Now > soapEndPointExpiration)
+                    var grSingleEndpoint = new ETEndpoint { AuthStub = this, Type = "soap" }.Get();
+                    if (grSingleEndpoint.Status && grSingleEndpoint.Results.Length == 1)
                     {
-                        var grSingleEndpoint = new ETEndpoint { AuthStub = this, Type = "soap" }.Get();
-                        if (grSingleEndpoint.Status && grSingleEndpoint.Results.Length == 1)
-                        {
-                            // Find the appropriate endpoint for the acccount
-                            configSection.SoapEndPoint = ((ETEndpoint)grSingleEndpoint.Results[0]).URL;
-                            fetchedSoapEndpoint = configSection.SoapEndPoint;
-                            soapEndPointExpiration = DateTime.Now.AddMinutes(cacheDurationInMinutes);
-                        }
-                        else
-                            configSection.SoapEndPoint = defaultSoapEndpoint;
+                        // Find the appropriate endpoint for the acccount
+                        configSection.SoapEndPoint = ((ETEndpoint)grSingleEndpoint.Results[0]).URL;
+                        fetchedSoapEndpoint = configSection.SoapEndPoint;
+                        soapEndPointExpiration = DateTime.Now.AddMinutes(cacheDurationInMinutes);
                     }
                     else
-                    {
-                        configSection.SoapEndPoint = fetchedSoapEndpoint;
-                    }
+                        configSection.SoapEndPoint = defaultSoapEndpoint;
                 }
                 catch
                 {
                     configSection.SoapEndPoint = defaultSoapEndpoint;
-                }  
+                }
             }
         }
         private string GetStackKey()
         {
-            if (stack == null || DateTime.Now > stackKeyExpiration)
+            if (DateTime.Now > stackKeyExpiration)
             {
                 string restAuth = FetchRestAuth();
 
