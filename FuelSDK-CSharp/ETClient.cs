@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
+using System.Xml.Linq;
 using JWT;
 using JWT.Serializers;
 using Newtonsoft.Json.Linq;
@@ -118,13 +119,17 @@ namespace FuelSDK
 
             // Create the SOAP binding for call with Oauth.
             SoapClient = new SoapClient(GetSoapBinding(), new EndpointAddress(new Uri(configSection.SoapEndPoint)));
+            SoapClient.ClientCredentials.UserName.UserName = "*";
+            SoapClient.ClientCredentials.UserName.Password = "*";
 
             // Find Organization Information
             if (organizationFind)
                 using (var scope = new OperationContextScope(SoapClient.InnerChannel))
                 {
                     // Add access token to SOAP header.
-                    var xmlHeader = MessageHeader.CreateHeader("fueloauth", "http://exacttarget.com", AuthToken);
+                    XNamespace ns = "http://exacttarget.com";
+                    var oauthElement = new XElement(ns + "oAuthToken", InternalAuthToken);
+                    var xmlHeader = MessageHeader.CreateHeader("oAuth", "http://exacttarget.com", oauthElement);
                     OperationContext.Current.OutgoingMessageHeaders.Add(xmlHeader);
 
                     var httpRequest = new System.ServiceModel.Channels.HttpRequestMessageProperty();
@@ -216,6 +221,7 @@ namespace FuelSDK
         {
             return new CustomBinding(new BindingElementCollection
             {
+                SecurityBindingElement.CreateUserNameOverTransportBindingElement(),
                 new TextMessageEncodingBindingElement
                 {
                     MessageVersion = MessageVersion.Soap12WSAddressingAugust2004,

@@ -52,7 +52,7 @@ namespace FuelSDK
         /// Gets or sets the authentification end point.
         /// </summary>
         /// <value>The authentification end point.</value>
-        [ConfigurationProperty("authEndPoint", DefaultValue = "https://auth.exacttargetapis.com/v1/requestToken")]
+        [ConfigurationProperty("authEndPoint", DefaultValue = "https://auth.exacttargetapis.com/v1/requestToken?legacy=1")]
 		public string AuthenticationEndPoint
 		{
 			get { return (string)this["authEndPoint"]; }
