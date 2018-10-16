@@ -6,15 +6,16 @@ namespace FuelSDK
     public class StackKey
     {
         ConcurrentDictionary<long, string> values;
-        static ETClient client;
 
         private static readonly Lazy<StackKey> lazy =
             new Lazy<StackKey>(() => new StackKey());
 
-        public static StackKey Instance(ETClient etClient)
+        public static StackKey Instance
         {
-            client = etClient;
-            return lazy.Value;
+            get
+            {
+                return lazy.Value;
+            }
         }
 
         private StackKey()
@@ -22,12 +23,14 @@ namespace FuelSDK
             values = new ConcurrentDictionary<long, string>();
         }
 
-        public string Get(long enterpriseId)
+        public string Get(long enterpriseId, ETClient client)
         {
             return values.GetOrAdd(enterpriseId, (eId) => {
                 var restAuth = client.FetchRestAuth();
-                var userInfo = new UserInfo(restAuth);
-                userInfo.AuthStub = client;     
+                var userInfo = new UserInfo(restAuth)
+                {
+                    AuthStub = client
+                };
                 return ((UserInfo)userInfo.Get().Results[0]).StackKey;
             });
         }
