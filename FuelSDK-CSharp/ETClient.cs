@@ -126,7 +126,7 @@ namespace FuelSDK
             if (organizationFind)
                 using (var scope = new OperationContextScope(SoapClient.InnerChannel))
                 {
-                    // Add access token to SOAP header.
+                    // Add oAuth token to SOAP header.
                     XNamespace ns = "http://exacttarget.com";
                     var oauthElement = new XElement(ns + "oAuthToken", InternalAuthToken);
                     var xmlHeader = MessageHeader.CreateHeader("oAuth", "http://exacttarget.com", oauthElement);
@@ -287,7 +287,7 @@ namespace FuelSDK
 
             // Parse the response
             var parsedResponse = JObject.Parse(responseFromServer);
-            InternalAuthToken = parsedResponse["legacyToken"] == null ? string.Empty : parsedResponse["legacyToken"].Value<string>().Trim();
+            InternalAuthToken = parsedResponse["legacyToken"].Value<string>().Trim();
             AuthToken = parsedResponse["accessToken"].Value<string>().Trim();
             AuthTokenExpiration = DateTime.Now.AddSeconds(int.Parse(parsedResponse["expiresIn"].Value<string>().Trim()));
             RefreshKey = parsedResponse["refreshToken"].Value<string>().Trim();
