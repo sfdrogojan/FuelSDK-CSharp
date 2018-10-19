@@ -32,9 +32,7 @@ namespace FuelSDK
         public JObject Jwt { get; private set; }
         public string EnterpriseId { get; private set; }
         public string OrganizationId { get; private set; }
-
-        private static string stack;
-        public string Stack { get { return GetStackKey(); } private set { stack = value; } }
+        public string Stack { get; private set; }
 
         private static DateTime soapEndPointExpiration;
         private static DateTime stackKeyExpiration;
@@ -143,11 +141,12 @@ namespace FuelSDK
                     {
                         EnterpriseId = results[0].Client.EnterpriseID.ToString();
                         OrganizationId = results[0].ID.ToString();
+                        Stack = StackKey.Instance.Get(long.Parse(EnterpriseId), this);
                     }
                 }
         }
 
-        private string FetchRestAuth()
+        internal string FetchRestAuth()
         {
             var returnedRestAuthEndpoint = new ETEndpoint { AuthStub = this, Type = "restAuth" }.Get();
             if (returnedRestAuthEndpoint.Status && returnedRestAuthEndpoint.Results.Length == 1)
@@ -177,31 +176,6 @@ namespace FuelSDK
                 {
                     configSection.SoapEndPoint = defaultSoapEndpoint;
                 }
-            }
-        }
-        private string GetStackKey()
-        {
-            if (DateTime.Now > stackKeyExpiration)
-            {
-                string restAuth = FetchRestAuth();
-
-                var userInfo = new UserInfo(restAuth, true) { AuthStub = this }.Get();
-                string stackKey = ((UserInfo)userInfo.Results[0]).StackKey;
-
-                if (!string.IsNullOrEmpty(stackKey))
-                {
-                    stack = stackKey;
-                    stackKeyExpiration = DateTime.Now.AddMinutes(cacheDurationInMinutes);
-                    return stack;
-                }
-                else
-                {
-                    throw new Exception("The stack key could not be determined");
-                }
-            }
-            else
-            {
-                return stack;
             }
         }
 
