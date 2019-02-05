@@ -5,6 +5,7 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Xml.Linq;
@@ -12,6 +13,7 @@ using JWT;
 using JWT.Serializers;
 using Newtonsoft.Json.Linq;
 
+[assembly: InternalsVisibleTo("FuelSDK-Test")]
 namespace FuelSDK
 {
 
@@ -27,6 +29,7 @@ namespace FuelSDK
         public string InternalAuthToken { get; private set; }
         public string RefreshKey { get; private set; }
         public DateTime AuthTokenExpiration { get; private set; }
+        public static DateTime SoapEndpointExpiration;
         public JObject Jwt { get; private set; }
         public string EnterpriseId { get; private set; }
         public string OrganizationId { get; private set; }
@@ -38,6 +41,10 @@ namespace FuelSDK
             public string EnterpriseId { get; set; }
             public string OrganizationId { get; set; }
             public string Stack { get; set; }
+        }
+        internal ETClient(Func<string> SoapEndPointProvider) : this(null, null)
+        {
+
         }
 
         public ETClient(string jwt)
@@ -107,11 +114,17 @@ namespace FuelSDK
             }
 
             // Find the appropriate endpoint for the acccount
-            var grSingleEndpoint = new ETEndpoint { AuthStub = this, Type = "soap" }.Get();
-            if (grSingleEndpoint.Status && grSingleEndpoint.Results.Length == 1)
-                configSection.SoapEndPoint = ((ETEndpoint)grSingleEndpoint.Results[0]).URL;
-            else
-                throw new Exception("Unable to determine stack using /platform/v1/endpoints: " + grSingleEndpoint.Message);
+            if (SoapEndpointExpiration == DateTime.MinValue || DateTime.Now > SoapEndpointExpiration)
+            {
+                var grSingleEndpoint = new ETEndpoint { AuthStub = this, Type = "soap" }.Get();
+                if (grSingleEndpoint.Status && grSingleEndpoint.Results.Length == 1)
+                {
+                    configSection.SoapEndPoint = ((ETEndpoint)grSingleEndpoint.Results[0]).URL;
+                    SoapEndpointExpiration = DateTime.Now.AddMinutes(15);
+                }
+                else
+                    throw new Exception("Unable to determine stack using /platform/v1/endpoints: " + grSingleEndpoint.Message);
+            }
 
             // Create the SOAP binding for call with Oauth.
 

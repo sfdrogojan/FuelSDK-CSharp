@@ -24,6 +24,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="JWT, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\JWT.3.0.0\lib\net35\JWT.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -42,6 +45,7 @@
   <ItemGroup>
     <Compile Include="ETCampaignAssetTest.cs" />
     <Compile Include="ETCampaignTest.cs" />
+    <Compile Include="ETClientTest.cs" />
     <Compile Include="ETContentAreaTest.cs" />
     <Compile Include="ETDataExtensionColumnTest.cs" />
     <Compile Include="ETDataExtensionRowTest.cs" />
