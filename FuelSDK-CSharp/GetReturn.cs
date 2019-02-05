@@ -87,10 +87,8 @@ namespace FuelSDK
                 return rr;
             }, (client, o) =>
             {
-                string requestID;
-                APIObject[] objectResults;
-                var overallStatus = client.SoapClient.Retrieve(o[0], out requestID, out objectResults);
-                return new ExecuteAPIResponse<APIObject>(objectResults, requestID, overallStatus) { OverallStatusMessage = overallStatus };
+                var retrieveResponse = client.SoapClient.Retrieve(new RetrieveRequest1(o[0]));
+                return new ExecuteAPIResponse<APIObject>(retrieveResponse.Results, retrieveResponse.RequestID, retrieveResponse.OverallStatus) { OverallStatusMessage = retrieveResponse.OverallStatus };
             }, objs);
             if (response != null)
             {

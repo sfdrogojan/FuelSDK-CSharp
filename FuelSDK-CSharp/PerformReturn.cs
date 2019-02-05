@@ -24,11 +24,9 @@ namespace FuelSDK
 				throw new ArgumentNullException("objs");
 			var response = ExecuteAPI((client, o) =>
 			{
-				string requestID;
-				string overallStatus;
-				string overallStatusMessage;
-				return new ExecuteAPIResponse<PerformResult>(client.SoapClient.Perform(new PerformOptions(), performAction, o, out overallStatus, out overallStatusMessage, out requestID), requestID, overallStatus) { OverallStatusMessage = overallStatusMessage };
-			}, objs);
+                var performResponse = client.SoapClient.Perform(new PerformRequest(new PerformOptions(), performAction, o));
+                return new ExecuteAPIResponse<PerformResult>(performResponse.Results, performResponse.RequestID, performResponse.OverallStatus) { OverallStatusMessage = performResponse.OverallStatusMessage };
+            }, objs);
 			if (response != null)
 				if (response.GetType() == typeof(PerformResult[]) && response.Length > 0)
 					Results = response.Cast<PerformResult>().Select(cr => new ResultDetail
