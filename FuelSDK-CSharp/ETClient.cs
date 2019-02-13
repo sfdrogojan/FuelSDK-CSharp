@@ -5,6 +5,7 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Xml.Linq;
@@ -50,8 +51,19 @@ namespace FuelSDK
             : this(new NameValueCollection { { "jwt", jwt } }, null) { }
         public ETClient(NameValueCollection parameters = null, RefreshState refreshState = null)
         {
+
             // Get configuration file and set variables
+#if NETFULL
             configSection = (FuelSDKConfigurationSection)ConfigurationManager.GetSection("fuelSDK");
+
+#else
+        ExeConfigurationFileMap fileMap = new ExeConfigurationFileMap();
+        Assembly assembly = Assembly.GetExecutingAssembly();
+        fileMap.ExeConfigFilename = Path.Combine(new FileInfo(assembly.Location).Directory.FullName, "App.config");
+        Configuration config = 
+            ConfigurationManager.OpenMappedExeConfiguration(fileMap, ConfigurationUserLevel.None);
+        configSection = (FuelSDKConfigurationSection)config.GetSection("fuelSDK");
+#endif
             configSection = (configSection != null ? (FuelSDKConfigurationSection)configSection.Clone() : new FuelSDKConfigurationSection());
             configSection = configSection
                 .WithDefaultAuthEndpoint(DefaultEndpoints.Auth)
