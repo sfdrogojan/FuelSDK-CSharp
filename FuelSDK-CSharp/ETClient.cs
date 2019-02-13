@@ -23,6 +23,7 @@ namespace FuelSDK
         public const string SDKVersion = "FuelSDK-C#-v1.1.0";
 
         private FuelSDKConfigurationSection configSection;
+        private string stackKey;
         public string AuthToken { get; private set; }
         public SoapClient SoapClient { get; private set; }
         public string InternalAuthToken { get; private set; }
@@ -31,7 +32,21 @@ namespace FuelSDK
         public JObject Jwt { get; private set; }
         public string EnterpriseId { get; private set; }
         public string OrganizationId { get; private set; }
-        public string Stack { get; private set; }
+        public string Stack
+        {
+            get
+            {
+                if (stackKey == null)
+                {
+                    stackKey = !string.IsNullOrEmpty(EnterpriseId) ? StackKey.Instance.Get(long.Parse(EnterpriseId), this) : null;
+                }
+                return stackKey;
+            }
+            private set
+            {
+                stackKey = value;
+            }
+        }
 
         private static DateTime soapEndPointExpiration;
         private static DateTime stackKeyExpiration;
@@ -143,7 +158,6 @@ namespace FuelSDK
                     {
                         EnterpriseId = results[0].Client.EnterpriseID.ToString();
                         OrganizationId = results[0].ID.ToString();
-                        Stack = StackKey.Instance.Get(long.Parse(EnterpriseId), this);
                     }
                 }
         }

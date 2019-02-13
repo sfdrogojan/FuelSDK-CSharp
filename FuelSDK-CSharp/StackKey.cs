@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 
 namespace FuelSDK
 {
@@ -31,7 +32,13 @@ namespace FuelSDK
                 {
                     AuthStub = client
                 };
-                return ((UserInfo)userInfo.Get().Results[0]).StackKey;
+
+                var userInfoGetResult = userInfo.Get();
+                if (userInfoGetResult.Results != null && userInfoGetResult.Results.Length > 0)
+                {
+                    return ((UserInfo)userInfoGetResult.Results[0]).StackKey;
+                }
+                return null;
             });
         }
     }

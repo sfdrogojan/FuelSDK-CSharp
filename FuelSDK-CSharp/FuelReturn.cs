@@ -504,6 +504,9 @@ namespace FuelSDK
 				using (var stream = we.Response.GetResponseStream())
 				using (var reader = new StreamReader(stream))
 					Message = reader.ReadToEnd();
+
+                System.Diagnostics.Debug.WriteLine("Error while executing a fuel REST request: {0}.\r\nResponse body: {1}", we, Message);
+
 				return null;
 			}
 		}
