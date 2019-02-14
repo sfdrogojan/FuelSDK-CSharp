@@ -26,8 +26,8 @@ namespace FuelSDK
 				ObjectType = TranslateObject(x).GetType().ToString().Replace("FuelSDK.", string.Empty)
 			}, (client, o) =>
 			{
-				string requestID;
-				return new ExecuteAPIResponse<ObjectDefinition>(client.SoapClient.Describe(o, out requestID), requestID, "OK");
+                var describeResponse = client.SoapClient.Describe(new DescribeRequest(o));
+				return new ExecuteAPIResponse<ObjectDefinition>(describeResponse.ObjectDefinition, describeResponse.RequestID, "OK");
 			}, objs);
 			if (response != null)
                 if (response.Length > 0)

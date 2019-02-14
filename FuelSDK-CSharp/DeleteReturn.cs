@@ -23,10 +23,9 @@ namespace FuelSDK
 				throw new ArgumentNullException("objs");
 			var response = ExecuteAPI((client, o) =>
 			{
-				string requestID;
-				string overallStatus;
-				return new ExecuteAPIResponse<DeleteResult>(client.SoapClient.Delete(new DeleteOptions(), o, out requestID, out overallStatus), requestID, overallStatus);
-			}, objs);
+                var deleteResponse = client.SoapClient.Delete(new DeleteRequest(new DeleteOptions(), o));
+                return new ExecuteAPIResponse<DeleteResult>(deleteResponse.Results, deleteResponse.RequestID, deleteResponse.OverallStatus);
+            }, objs);
 			if (response != null)
 				if (response.GetType() == typeof(DeleteResult[]) && response.Length > 0)
 					Results = response.Cast<DeleteResult>().Select(x => new ResultDetail

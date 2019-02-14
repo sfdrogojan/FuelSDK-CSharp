@@ -408,27 +408,15 @@ namespace FuelSDK
 			if (client == null)
 				throw new InvalidOperationException("client");
 			client.RefreshToken();
-			using (var scope = new OperationContextScope(client.SoapClient.InnerChannel))
-			{
-                // Add oAuth token to SOAP header.
-                XNamespace ns = "http://exacttarget.com";
-                var oauthElement = new XElement(ns + "oAuthToken", client.InternalAuthToken);
-                var xmlHeader = MessageHeader.CreateHeader("oAuth", "http://exacttarget.com", oauthElement);
-                OperationContext.Current.OutgoingMessageHeaders.Add(xmlHeader);
 
-				var httpRequest = new System.ServiceModel.Channels.HttpRequestMessageProperty();
-				OperationContext.Current.OutgoingMessageProperties.Add(System.ServiceModel.Channels.HttpRequestMessageProperty.Name, httpRequest);
-				httpRequest.Headers.Add(HttpRequestHeader.UserAgent, ETClient.SDKVersion);
+            var response = func(client, objs.Select(select).ToArray());
+            RequestID = response.RequestID;
+            Status = (response.OverallStatus == "OK" || response.OverallStatus == "MoreDataAvailable");
+            Code = (Status ? 200 : 0);
+            MoreResults = (response.OverallStatus == "MoreDataAvailable");
+            Message = (response.OverallStatusMessage ?? string.Empty);
 
-				var response = func(client, objs.Select(select).ToArray());
-				RequestID = response.RequestID;
-				Status = (response.OverallStatus == "OK" || response.OverallStatus == "MoreDataAvailable");
-				Code = (Status ? 200 : 0);
-				MoreResults = (response.OverallStatus == "MoreDataAvailable");
-				Message = (response.OverallStatusMessage ?? string.Empty);
-
-				return response.Results;
-			}
+            return response.Results;
 		}
 
 		protected string ExecuteFuel(FuelObject obj, string[] required, string method, bool postValue)
