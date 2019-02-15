@@ -143,7 +143,7 @@ namespace FuelSDK
                     {
                         EnterpriseId = results[0].Client.EnterpriseID.ToString();
                         OrganizationId = results[0].ID.ToString();
-                        Stack = StackKey.Instance.Get(long.Parse(EnterpriseId), this);
+                        //Stack = StackKey.Instance.Get(long.Parse(EnterpriseId), this);
                     }
                 }
         }
