@@ -1,7 +1,7 @@
 ﻿using System.ServiceModel.Channels;
 using System.Xml;
 
-namespace FuelSDK
+namespace FuelSDK.MessageHeaders
 {
     class OAuthMessageHeader : MessageHeader
     {

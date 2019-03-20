@@ -10,6 +10,7 @@ using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
 using System.Xml.Linq;
+using FuelSDK.EndpointBehaviors;
 using JWT;
 using JWT.Serializers;
 using Newtonsoft.Json.Linq;
@@ -54,17 +55,7 @@ namespace FuelSDK
         {
 
             // Get configuration file and set variables
-#if NETFULL
-            configSection = (FuelSDKConfigurationSection)ConfigurationManager.GetSection("fuelSDK");
-
-#else
-        ExeConfigurationFileMap fileMap = new ExeConfigurationFileMap();
-        Assembly assembly = Assembly.GetExecutingAssembly();
-        fileMap.ExeConfigFilename = Path.Combine(new FileInfo(assembly.Location).Directory.FullName, "App.config");
-        Configuration config = 
-            ConfigurationManager.OpenMappedExeConfiguration(fileMap, ConfigurationUserLevel.None);
-        configSection = (FuelSDKConfigurationSection)config.GetSection("fuelSDK");
-#endif
+            configSection = ConfigUtil.GetFuelSDKConfigSection();
             configSection = (configSection != null ? (FuelSDKConfigurationSection)configSection.Clone() : new FuelSDKConfigurationSection());
             configSection = configSection
                 .WithDefaultAuthEndpoint(DefaultEndpoints.Auth)
@@ -129,14 +120,19 @@ namespace FuelSDK
             }
 
             FetchSoapEndpoint();
-
             var binding = GetSoapBinding();
             var endpointAddress = new EndpointAddress(new Uri(configSection.SoapEndPoint));
+
+#if NET40
             ChannelFactory<Soap> channelFactory = new ChannelFactory<Soap>(binding, endpointAddress);
             channelFactory.Endpoint.Behaviors.Add(new AddHeadersEndpointBehavior(InternalAuthToken, SDKVersion));
             var credentialBehaviour = channelFactory.Endpoint.Behaviors.Find<ClientCredentials>();
             credentialBehaviour.UserName.UserName = "*";
             credentialBehaviour.UserName.Password = "*";
+#else
+            ChannelFactory<Soap> channelFactory = new ChannelFactory<Soap>(new BasicHttpsBinding(BasicHttpsSecurityMode.Transport), endpointAddress);
+            channelFactory.Endpoint.EndpointBehaviors.Add(new AddHeadersEndpointBehavior(InternalAuthToken, SDKVersion));
+#endif
 
             SoapClient = channelFactory.CreateChannel();
 
@@ -179,7 +175,7 @@ namespace FuelSDK
                     else
                         configSection.SoapEndPoint = DefaultEndpoints.Soap;
                 }
-                catch
+                catch(Exception ex)
                 {
                     configSection.SoapEndPoint = DefaultEndpoints.Soap;
                 }
@@ -215,6 +211,7 @@ namespace FuelSDK
                         MaxNameTableCharCount = int.MaxValue
                     }
                 },
+                //new Ht
                 new HttpsTransportBindingElement
                 {
                     TransferMode = TransferMode.Buffered,

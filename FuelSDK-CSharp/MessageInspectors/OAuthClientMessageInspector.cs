@@ -1,7 +1,8 @@
 ﻿using System.ServiceModel;
 using System.ServiceModel.Dispatcher;
+using FuelSDK.MessageHeaders;
 
-namespace FuelSDK
+namespace FuelSDK.MessageInspectors
 {
     class OAuthClientMessageInspector : IClientMessageInspector
     {

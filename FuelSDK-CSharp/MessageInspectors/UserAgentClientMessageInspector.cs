@@ -3,7 +3,7 @@ using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Dispatcher;
 
-namespace FuelSDK
+namespace FuelSDK.MessageInspectors
 {
     class UserAgentClientMessageInspector : IClientMessageInspector
     {
