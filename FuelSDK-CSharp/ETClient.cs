@@ -23,7 +23,7 @@ namespace FuelSDK
     /// </summary>
     public class ETClient
     {
-        public const string SDKVersion = "FuelSDK-C#-v1.1.0";
+        public const string SDKVersion = "FuelSDK-C#-v1.2.1";
 
         private FuelSDKConfigurationSection configSection;
         public string AuthToken { get; private set; }
@@ -34,12 +34,36 @@ namespace FuelSDK
         public JObject Jwt { get; private set; }
         public string EnterpriseId { get; private set; }
         public string OrganizationId { get; private set; }
-        public string Stack { get; private set; }
+        private string stackKey;
+
+        public bool UseOAuth2Authentication
+        {
+            get { return !String.IsNullOrEmpty(configSection.UseOAuth2Authentication) && Convert.ToBoolean(configSection.UseOAuth2Authentication); }
+        }
+
+        [Obsolete(StackKeyErrorMessage)]
+        public string Stack
+        {
+            get
+            {
+                if (stackKey != null)
+                    return stackKey;
+
+                stackKey = GetStackFromSoapEndPoint(new Uri(configSection.SoapEndPoint));
+                return stackKey;
+            }
+            private set
+            {
+                stackKey = value;
+            }
+        }
 
         private static DateTime soapEndPointExpiration;
         private static DateTime stackKeyExpiration;
         private static string fetchedSoapEndpoint;
         private const long cacheDurationInMinutes = 10;
+
+        private const string StackKeyErrorMessage = "Tenant specific endpoints doesn't support Stack Key property and this will property will be deprecated in next major release";
 
         public class RefreshState
         {
@@ -78,8 +102,19 @@ namespace FuelSDK
                 {
                     configSection.RestEndPoint = parameters["restEndPoint"];
                 }
+                if (parameters.AllKeys.Contains("useOAuth2Authentication"))
+                {
+                    configSection.UseOAuth2Authentication = parameters["useOAuth2Authentication"];
+                }
+                if (parameters.AllKeys.Contains("accountId"))
+                {
+                    configSection.AccountId = parameters["accountId"];
+                }
+                if (parameters.AllKeys.Contains("scope"))
+                {
+                    configSection.Scope = parameters["scope"];
+                }
             }
-
             if (string.IsNullOrEmpty(configSection.ClientId) || string.IsNullOrEmpty(configSection.ClientSecret))
                 throw new Exception("clientId or clientSecret is null: Must be provided in config file or passed when instantiating ETClient");
 
@@ -194,12 +229,22 @@ namespace FuelSDK
             return json;
         }
 
-        private static Binding GetSoapBinding()
+        private string GetStackFromSoapEndPoint(Uri uri)
         {
-            return new CustomBinding(new BindingElementCollection
+            var parts = uri.Host.Split('.');
+            if (parts.Length < 2 || !parts[0].Equals("webservice", StringComparison.OrdinalIgnoreCase))
+                throw new Exception(StackKeyErrorMessage);
+            return (parts[1] == "exacttarget" ? "s1" : parts[1].ToLower());
+        }
+
+        private Binding GetSoapBinding()
+        {
+            BindingElementCollection bindingCollection = new BindingElementCollection();
+            if (!UseOAuth2Authentication)
             {
-                SecurityBindingElement.CreateUserNameOverTransportBindingElement(),
-                new TextMessageEncodingBindingElement
+                bindingCollection.Add(SecurityBindingElement.CreateUserNameOverTransportBindingElement());
+            }
+            bindingCollection.AddRange(new TextMessageEncodingBindingElement
                 {
                     MessageVersion = MessageVersion.Soap12WSAddressingAugust2004,
                     ReaderQuotas =
@@ -218,7 +263,9 @@ namespace FuelSDK
                     MaxReceivedMessageSize = 655360000,
                     MaxBufferSize = 655360000,
                     KeepAliveEnabled = true
-                } })
+                });
+
+            return new CustomBinding(bindingCollection)
             {
                 Name = "UserNameSoapBinding",
                 Namespace = "Core.Soap",
@@ -231,7 +278,13 @@ namespace FuelSDK
 
         public void RefreshToken(bool force = false)
         {
-            // workaround to support TLS 1.2 in .NET 4.0 (source: https://blogs.perficient.com/2016/04/28/tsl-1-2-and-net-support/)
+            if (UseOAuth2Authentication)
+            {
+                RefreshTokenWithOauth2(force);
+                return;
+            }
+
+            // workaround to support TLS 1.2 in .NET 4.0
             ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;
             // RefreshToken
             if (!string.IsNullOrEmpty(AuthToken) && DateTime.Now.AddSeconds(300) <= AuthTokenExpiration && !force)
@@ -269,6 +322,50 @@ namespace FuelSDK
             AuthToken = parsedResponse["accessToken"].Value<string>().Trim();
             AuthTokenExpiration = DateTime.Now.AddSeconds(int.Parse(parsedResponse["expiresIn"].Value<string>().Trim()));
             RefreshKey = parsedResponse["refreshToken"].Value<string>().Trim();
+        }
+
+        private void RefreshTokenWithOauth2(bool force = false)
+        {
+            // workaround to support TLS 1.2 in .NET 4.0
+            ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;
+            // RefreshToken
+            if (!string.IsNullOrEmpty(AuthToken) && DateTime.Now.AddSeconds(300) <= AuthTokenExpiration && !force)
+                return;
+
+            var authEndpoint = configSection.AuthenticationEndPoint + "/v2/token";
+            var request = (HttpWebRequest)WebRequest.Create(authEndpoint.Trim());
+            request.Method = "POST";
+            request.ContentType = "application/json";
+            request.UserAgent = SDKVersion;
+
+            using (var streamWriter = new StreamWriter(request.GetRequestStream()))
+            {
+                dynamic payload = new JObject();
+                payload.client_id = configSection.ClientId;
+                payload.client_secret = configSection.ClientSecret;
+                payload.grant_type = "client_credentials";
+                if (!string.IsNullOrEmpty(configSection.AccountId))
+                    payload.account_id = configSection.AccountId;
+                if (!string.IsNullOrEmpty(configSection.Scope))
+                    payload.scope = configSection.Scope;
+
+                streamWriter.Write(payload.ToString());
+            }
+
+            // Get the response
+            string responseFromServer = null;
+            using (var response = (HttpWebResponse)request.GetResponse())
+            using (var dataStream = response.GetResponseStream())
+            using (var reader = new StreamReader(dataStream))
+                responseFromServer = reader.ReadToEnd();
+
+            // Parse the response
+            var parsedResponse = JObject.Parse(responseFromServer);
+            AuthToken = parsedResponse["access_token"].Value<string>().Trim();
+            InternalAuthToken = parsedResponse["access_token"].Value<string>().Trim();
+            AuthTokenExpiration = DateTime.Now.AddSeconds(int.Parse(parsedResponse["expires_in"].Value<string>().Trim()));
+            configSection.SoapEndPoint = parsedResponse["soap_instance_url"].Value<string>().Trim() + "service.asmx";
+            configSection.RestEndPoint = parsedResponse["rest_instance_url"].Value<string>().Trim();
         }
 
         public FuelReturn AddSubscribersToList(string emailAddress, string subscriberKey, IEnumerable<int> listIDs) { return ProcessAddSubscriberToList(emailAddress, subscriberKey, listIDs); }

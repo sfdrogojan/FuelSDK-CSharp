@@ -7,12 +7,12 @@ namespace FuelSDK.EndpointBehaviors
 {
     class AddHeadersEndpointBehavior : IEndpointBehavior
     {
-        private readonly string internalAuthToken;
+        private readonly string authToken;
         private readonly string sdkVersion;
 
-        public AddHeadersEndpointBehavior(string internalAuthToken, string sdkVersion)
+        public AddHeadersEndpointBehavior(string authToken, string sdkVersion)
         {
-            this.internalAuthToken = internalAuthToken;
+            this.authToken = authToken;
             this.sdkVersion = sdkVersion;
         }
 
@@ -23,12 +23,11 @@ namespace FuelSDK.EndpointBehaviors
         public void ApplyClientBehavior(ServiceEndpoint endpoint, ClientRuntime clientRuntime)
         {
 #if NET40
-            clientRuntime.MessageInspectors.Add(new OAuthClientMessageInspector(this.internalAuthToken));
+            clientRuntime.MessageInspectors.Add(new OAuthClientMessageInspector(this.authToken));
             clientRuntime.MessageInspectors.Add(new UserAgentClientMessageInspector(this.sdkVersion));
 #else
-            clientRuntime.ClientMessageInspectors.Add(new OAuthClientMessageInspector(this.internalAuthToken));
+            clientRuntime.ClientMessageInspectors.Add(new OAuthClientMessageInspector(this.authToken));
             clientRuntime.ClientMessageInspectors.Add(new UserAgentClientMessageInspector(this.sdkVersion));
-            clientRuntime.ClientMessageInspectors.Add(new SecurityClientMessageInspector());
 #endif
 
         }

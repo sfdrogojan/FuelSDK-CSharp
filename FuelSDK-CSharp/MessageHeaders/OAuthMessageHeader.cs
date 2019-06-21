@@ -5,20 +5,20 @@ namespace FuelSDK.MessageHeaders
 {
     class OAuthMessageHeader : MessageHeader
     {
-        private readonly string internalAuthToken;
+        private readonly string authToken;
 
-        public OAuthMessageHeader(string internalAuthToken)
+        public OAuthMessageHeader(string authToken)
         {
-            this.internalAuthToken = internalAuthToken;
+            this.authToken = authToken;
         }
 
-        public override string Name => "oAuth";
+        public override string Name => "fueloauth";
 
         public override string Namespace => "http://exacttarget.com";
 
         protected override void OnWriteHeaderContents(XmlDictionaryWriter writer, MessageVersion messageVersion)
         {
-            writer.WriteElementString("oAuthToken", internalAuthToken);
+            writer.WriteString(authToken);
         }
     }
 }
