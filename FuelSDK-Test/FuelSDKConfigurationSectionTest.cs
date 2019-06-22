@@ -85,7 +85,7 @@ namespace FuelSDK.Test
         [Test]
         public void WithDefaultsDoesNotOverwriteValuesSetInConfig()
         {
-            FuelSDKConfigurationSection section = GetCustomConfigurationSectionFromConfigFile(allPropertiesSetConfigFileName);
+            IFuelSDKConfiguration section = GetCustomConfigurationSectionFromConfigFile(allPropertiesSetConfigFileName);
             section = section
                 .WithDefaultRestEndpoint(DefaultEndpoints.Rest)
                 .WithDefaultAuthEndpoint(DefaultEndpoints.Auth);

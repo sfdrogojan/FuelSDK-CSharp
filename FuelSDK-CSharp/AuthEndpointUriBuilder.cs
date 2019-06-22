@@ -5,16 +5,16 @@ namespace FuelSDK
     public class AuthEndpointUriBuilder
     {
         private const string legacyQuery = "legacy=1";
-        private readonly FuelSDKConfigurationSection configSection;
+        private readonly IFuelSDKConfiguration configuration;
 
-        public AuthEndpointUriBuilder(FuelSDKConfigurationSection configSection)
+        public AuthEndpointUriBuilder(IFuelSDKConfiguration configuration)
         {
-            this.configSection = configSection;
+            this.configuration = configuration;
         }
 
         public string Build()
         {
-            UriBuilder uriBuilder = new UriBuilder(configSection.AuthenticationEndPoint);
+            UriBuilder uriBuilder = new UriBuilder(configuration.AuthenticationEndPoint);
 
             if (uriBuilder.Query.ToLower().Contains(legacyQuery))
             {

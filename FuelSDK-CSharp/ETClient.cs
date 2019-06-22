@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
@@ -25,7 +26,7 @@ namespace FuelSDK
     {
         public const string SDKVersion = "FuelSDK-C#-v1.2.1";
 
-        private FuelSDKConfigurationSection configSection;
+        private IFuelSDKConfiguration configuration;
         public string AuthToken { get; private set; }
         public Soap SoapClient { get; private set; }
         public string InternalAuthToken { get; private set; }
@@ -38,7 +39,7 @@ namespace FuelSDK
 
         public bool UseOAuth2Authentication
         {
-            get { return !String.IsNullOrEmpty(configSection.UseOAuth2Authentication) && Convert.ToBoolean(configSection.UseOAuth2Authentication); }
+            get { return !String.IsNullOrEmpty(configuration.UseOAuth2Authentication) && Convert.ToBoolean(configuration.UseOAuth2Authentication); }
         }
 
         [Obsolete(StackKeyErrorMessage)]
@@ -49,7 +50,7 @@ namespace FuelSDK
                 if (stackKey != null)
                     return stackKey;
 
-                stackKey = GetStackFromSoapEndPoint(new Uri(configSection.SoapEndPoint));
+                stackKey = GetStackFromSoapEndPoint(new Uri(configuration.SoapEndPoint));
                 return stackKey;
             }
             private set
@@ -58,10 +59,7 @@ namespace FuelSDK
             }
         }
 
-        private static DateTime soapEndPointExpiration;
         private static DateTime stackKeyExpiration;
-        private static string fetchedSoapEndpoint;
-        private const long cacheDurationInMinutes = 10;
 
         private const string StackKeyErrorMessage = "Tenant specific endpoints doesn't support Stack Key property and this will property will be deprecated in next major release";
 
@@ -75,49 +73,16 @@ namespace FuelSDK
 
         public ETClient(string jwt)
             : this(new NameValueCollection { { "jwt", jwt } }, null) { }
-        public ETClient(NameValueCollection parameters = null, RefreshState refreshState = null)
+
+        internal ETClient(IFuelSDKConfiguration configuration, ISoapClientFactory soapClientFactory, RefreshState refreshState = null)
         {
+            this.configuration = configuration;
+            this.SoapClient = soapClientFactory.Create();
+        }
 
-            // Get configuration file and set variables
-            configSection = ConfigUtil.GetFuelSDKConfigSection();
-            configSection = (configSection != null ? (FuelSDKConfigurationSection)configSection.Clone() : new FuelSDKConfigurationSection());
-            configSection = configSection
-                .WithDefaultAuthEndpoint(DefaultEndpoints.Auth)
-                .WithDefaultRestEndpoint(DefaultEndpoints.Rest);
-            if (parameters != null)
-            {
-                if (parameters.AllKeys.Contains("appSignature"))
-                    configSection.AppSignature = parameters["appSignature"];
-                if (parameters.AllKeys.Contains("clientId"))
-                    configSection.ClientId = parameters["clientId"];
-                if (parameters.AllKeys.Contains("clientSecret"))
-                    configSection.ClientSecret = parameters["clientSecret"];
-                if (parameters.AllKeys.Contains("soapEndPoint"))
-                    configSection.SoapEndPoint = parameters["soapEndPoint"];
-                if (parameters.AllKeys.Contains("authEndPoint"))
-                {
-                    configSection.AuthenticationEndPoint = parameters["authEndPoint"];
-                }
-                if (parameters.AllKeys.Contains("restEndPoint"))
-                {
-                    configSection.RestEndPoint = parameters["restEndPoint"];
-                }
-                if (parameters.AllKeys.Contains("useOAuth2Authentication"))
-                {
-                    configSection.UseOAuth2Authentication = parameters["useOAuth2Authentication"];
-                }
-                if (parameters.AllKeys.Contains("accountId"))
-                {
-                    configSection.AccountId = parameters["accountId"];
-                }
-                if (parameters.AllKeys.Contains("scope"))
-                {
-                    configSection.Scope = parameters["scope"];
-                }
-            }
-            if (string.IsNullOrEmpty(configSection.ClientId) || string.IsNullOrEmpty(configSection.ClientSecret))
-                throw new Exception("clientId or clientSecret is null: Must be provided in config file or passed when instantiating ETClient");
-
+        public ETClient(NameValueCollection parameters = null, RefreshState refreshState = null) 
+        {
+            this.configuration = new ConfigFileWithParametersOverwriteConfigurationProvider().Get(parameters);
             // If JWT URL Parameter Used
             var organizationFind = false;
             if (refreshState != null)
@@ -130,10 +95,10 @@ namespace FuelSDK
             }
             else if (parameters != null && parameters.AllKeys.Contains("jwt") && !string.IsNullOrEmpty(parameters["jwt"]))
             {
-                if (string.IsNullOrEmpty(configSection.AppSignature))
+                if (string.IsNullOrEmpty(configuration.AppSignature))
                     throw new Exception("Unable to utilize JWT for SSO without appSignature: Must be provided in config file or passed when instantiating ETClient");
                 var encodedJWT = parameters["jwt"].ToString().Trim();
-                var decodedJWT = DecodeJWT(encodedJWT, configSection.AppSignature);
+                var decodedJWT = DecodeJWT(encodedJWT, configuration.AppSignature);
                 var parsedJWT = JObject.Parse(decodedJWT);
                 AuthToken = parsedJWT["request"]["user"]["oauthToken"].Value<string>().Trim();
                 AuthTokenExpiration = DateTime.Now.AddSeconds(int.Parse(parsedJWT["request"]["user"]["expiresIn"].Value<string>().Trim()));
@@ -154,22 +119,7 @@ namespace FuelSDK
                 organizationFind = true;
             }
 
-            FetchSoapEndpoint();
-            var binding = GetSoapBinding();
-            var endpointAddress = new EndpointAddress(new Uri(configSection.SoapEndPoint));
-
-#if NET40
-            ChannelFactory<Soap> channelFactory = new ChannelFactory<Soap>(binding, endpointAddress);
-            channelFactory.Endpoint.Behaviors.Add(new AddHeadersEndpointBehavior(InternalAuthToken, SDKVersion));
-            var credentialBehaviour = channelFactory.Endpoint.Behaviors.Find<ClientCredentials>();
-            credentialBehaviour.UserName.UserName = "*";
-            credentialBehaviour.UserName.Password = "*";
-#else
-            ChannelFactory<Soap> channelFactory = new ChannelFactory<Soap>(new BasicHttpsBinding(BasicHttpsSecurityMode.Transport), endpointAddress);
-            channelFactory.Endpoint.EndpointBehaviors.Add(new AddHeadersEndpointBehavior(InternalAuthToken, SDKVersion));
-#endif
-
-            SoapClient = channelFactory.CreateChannel();
+            SoapClient = new SoapClientFactory(configuration, AuthToken, SDKVersion, this).Create();
 
             // Find Organization Information
             if (organizationFind)
@@ -193,30 +143,6 @@ namespace FuelSDK
                 throw new Exception("REST auth endpoint could not be determined");
         }
 
-        private void FetchSoapEndpoint()
-        {
-            if (string.IsNullOrEmpty(configSection.SoapEndPoint) || (DateTime.Now > soapEndPointExpiration && fetchedSoapEndpoint != null))
-            {
-                try
-                {
-                    var grSingleEndpoint = new ETEndpoint { AuthStub = this, Type = "soap" }.Get();
-                    if (grSingleEndpoint.Status && grSingleEndpoint.Results.Length == 1)
-                    {
-                        // Find the appropriate endpoint for the account
-                        configSection.SoapEndPoint = ((ETEndpoint)grSingleEndpoint.Results[0]).URL;
-                        fetchedSoapEndpoint = configSection.SoapEndPoint;
-                        soapEndPointExpiration = DateTime.Now.AddMinutes(cacheDurationInMinutes);
-                    }
-                    else
-                        configSection.SoapEndPoint = DefaultEndpoints.Soap;
-                }
-                catch(Exception ex)
-                {
-                    configSection.SoapEndPoint = DefaultEndpoints.Soap;
-                }
-            }
-        }
-
         private string DecodeJWT(string jwt, string key)
         {
             IJsonSerializer serializer = new JsonNetSerializer();
@@ -237,45 +163,6 @@ namespace FuelSDK
             return (parts[1] == "exacttarget" ? "s1" : parts[1].ToLower());
         }
 
-        private Binding GetSoapBinding()
-        {
-            BindingElementCollection bindingCollection = new BindingElementCollection();
-            if (!UseOAuth2Authentication)
-            {
-                bindingCollection.Add(SecurityBindingElement.CreateUserNameOverTransportBindingElement());
-            }
-            bindingCollection.AddRange(new TextMessageEncodingBindingElement
-                {
-                    MessageVersion = MessageVersion.Soap12WSAddressingAugust2004,
-                    ReaderQuotas =
-                    {
-                        MaxDepth = 32,
-                        MaxStringContentLength = int.MaxValue,
-                        MaxArrayLength = int.MaxValue,
-                        MaxBytesPerRead = int.MaxValue,
-                        MaxNameTableCharCount = int.MaxValue
-                    }
-                },
-                //new Ht
-                new HttpsTransportBindingElement
-                {
-                    TransferMode = TransferMode.Buffered,
-                    MaxReceivedMessageSize = 655360000,
-                    MaxBufferSize = 655360000,
-                    KeepAliveEnabled = true
-                });
-
-            return new CustomBinding(bindingCollection)
-            {
-                Name = "UserNameSoapBinding",
-                Namespace = "Core.Soap",
-                CloseTimeout = new TimeSpan(0, 50, 0),
-                OpenTimeout = new TimeSpan(0, 50, 0),
-                ReceiveTimeout = new TimeSpan(0, 50, 0),
-                SendTimeout = new TimeSpan(0, 50, 0)
-            };
-        }
-
         public void RefreshToken(bool force = false)
         {
             if (UseOAuth2Authentication)
@@ -291,7 +178,7 @@ namespace FuelSDK
                 return;
 
             // Get an internalAuthToken using clientId and clientSecret
-            var authEndpoint = new AuthEndpointUriBuilder(configSection).Build();
+            var authEndpoint = new AuthEndpointUriBuilder(configuration).Build();
 
             // Build the request
             var request = (HttpWebRequest)WebRequest.Create(authEndpoint.Trim());
@@ -303,9 +190,9 @@ namespace FuelSDK
             {
                 string json;
                 if (!string.IsNullOrEmpty(RefreshKey))
-                    json = string.Format("{{\"clientId\": \"{0}\", \"clientSecret\": \"{1}\", \"refreshToken\": \"{2}\", \"scope\": \"cas:{3}\" , \"accessType\": \"offline\"}}", configSection.ClientId, configSection.ClientSecret, RefreshKey, InternalAuthToken);
+                    json = string.Format("{{\"clientId\": \"{0}\", \"clientSecret\": \"{1}\", \"refreshToken\": \"{2}\", \"scope\": \"cas:{3}\" , \"accessType\": \"offline\"}}", configuration.ClientId, configuration.ClientSecret, RefreshKey, InternalAuthToken);
                 else
-                    json = string.Format("{{\"clientId\": \"{0}\", \"clientSecret\": \"{1}\", \"accessType\": \"offline\"}}", configSection.ClientId, configSection.ClientSecret);
+                    json = string.Format("{{\"clientId\": \"{0}\", \"clientSecret\": \"{1}\", \"accessType\": \"offline\"}}", configuration.ClientId, configuration.ClientSecret);
                 streamWriter.Write(json);
             }
 
@@ -332,7 +219,7 @@ namespace FuelSDK
             if (!string.IsNullOrEmpty(AuthToken) && DateTime.Now.AddSeconds(300) <= AuthTokenExpiration && !force)
                 return;
 
-            var authEndpoint = configSection.AuthenticationEndPoint + "/v2/token";
+            var authEndpoint = configuration.AuthenticationEndPoint + "/v2/token";
             var request = (HttpWebRequest)WebRequest.Create(authEndpoint.Trim());
             request.Method = "POST";
             request.ContentType = "application/json";
@@ -341,13 +228,13 @@ namespace FuelSDK
             using (var streamWriter = new StreamWriter(request.GetRequestStream()))
             {
                 dynamic payload = new JObject();
-                payload.client_id = configSection.ClientId;
-                payload.client_secret = configSection.ClientSecret;
+                payload.client_id = configuration.ClientId;
+                payload.client_secret = configuration.ClientSecret;
                 payload.grant_type = "client_credentials";
-                if (!string.IsNullOrEmpty(configSection.AccountId))
-                    payload.account_id = configSection.AccountId;
-                if (!string.IsNullOrEmpty(configSection.Scope))
-                    payload.scope = configSection.Scope;
+                if (!string.IsNullOrEmpty(configuration.AccountId))
+                    payload.account_id = configuration.AccountId;
+                if (!string.IsNullOrEmpty(configuration.Scope))
+                    payload.scope = configuration.Scope;
 
                 streamWriter.Write(payload.ToString());
             }
@@ -364,8 +251,8 @@ namespace FuelSDK
             AuthToken = parsedResponse["access_token"].Value<string>().Trim();
             InternalAuthToken = parsedResponse["access_token"].Value<string>().Trim();
             AuthTokenExpiration = DateTime.Now.AddSeconds(int.Parse(parsedResponse["expires_in"].Value<string>().Trim()));
-            configSection.SoapEndPoint = parsedResponse["soap_instance_url"].Value<string>().Trim() + "service.asmx";
-            configSection.RestEndPoint = parsedResponse["rest_instance_url"].Value<string>().Trim();
+            configuration.SoapEndPoint = parsedResponse["soap_instance_url"].Value<string>().Trim() + "service.asmx";
+            configuration.RestEndPoint = parsedResponse["rest_instance_url"].Value<string>().Trim();
         }
 
         public FuelReturn AddSubscribersToList(string emailAddress, string subscriberKey, IEnumerable<int> listIDs) { return ProcessAddSubscriberToList(emailAddress, subscriberKey, listIDs); }
