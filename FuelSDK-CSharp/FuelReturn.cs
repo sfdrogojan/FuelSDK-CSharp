@@ -461,10 +461,10 @@ namespace FuelSDK
                 completeURL += "?page=" + obj.Page.ToString();
 
             var request = (HttpWebRequest)WebRequest.Create(completeURL.Trim());
-            request.Headers.Add("Authorization", "Bearer " + obj.AuthStub.configuration.AuthToken);
+            request.Headers.Add("Authorization", "Bearer " + obj.AuthStub.Configuration.AuthToken);
             request.Method = method;
 			request.ContentType = "application/json";
-			request.UserAgent = obj.AuthStub.configuration.SDKVersion;
+			request.UserAgent = obj.AuthStub.Configuration.SDKVersion;
 
 			if (postValue)
 				using (var streamWriter = new StreamWriter(request.GetRequestStream()))
