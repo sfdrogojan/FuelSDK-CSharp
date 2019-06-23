@@ -60,7 +60,7 @@ namespace FuelSDK.Test
         public void GetCampaign()
         {
             var campObj = new ETCampaign();
-            campObj.ID = campaign.ID;
+            campObj.ID = campaign.ID + 10;
             campObj.AuthStub = client;
             var result = campObj.Get();
             var getCampObj = (ETCampaign) result.Results[0];

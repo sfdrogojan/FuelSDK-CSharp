@@ -27,10 +27,10 @@ namespace FuelSDK
 
 #if NET40
             ChannelFactory<Soap> channelFactory = new ChannelFactory<Soap>(binding, endpointAddress);
-            channelFactory.Endpoint.Behaviors.Add(new AddHeadersEndpointBehavior(configuration.AuthToken, configuration.SDKVersion));
+            channelFactory.Endpoint.Behaviors.Add(new AddHeadersEndpointBehavior(etClient.AuthToken, ETClient.SDKVersion));
 #else
             ChannelFactory<Soap> channelFactory = new ChannelFactory<Soap>(new BasicHttpsBinding(BasicHttpsSecurityMode.Transport), endpointAddress);
-            channelFactory.Endpoint.EndpointBehaviors.Add(new AddHeadersEndpointBehavior(configuration.AuthToken, configuration.SDKVersion));
+            channelFactory.Endpoint.EndpointBehaviors.Add(new AddHeadersEndpointBehavior(etClient.AuthToken, ETClient.SDKVersion));
 #endif
 
             return channelFactory.CreateChannel();

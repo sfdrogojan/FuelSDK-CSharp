@@ -43,6 +43,7 @@ namespace FuelSDK
 
 		private Dictionary<Type, Type> _translators = new Dictionary<Type, Type>();
         private Dictionary<Type, Type> _translators2 = new Dictionary<Type, Type>();
+        private readonly IHttpWebRequestWrapperFactory httpWebRequestWrapperFactory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="T:FuelSDK.FuelReturn"/> class.
@@ -224,7 +225,14 @@ namespace FuelSDK
             _translators2.Add(typeof(UnsubEvent), typeof(ET_UnsubEvent));
             _translators.Add(typeof(ET_SentEvent), typeof(SentEvent));
             _translators2.Add(typeof(SentEvent), typeof(ET_SentEvent));
+
+            this.httpWebRequestWrapperFactory = new HttpWebRequestWrapperFactory();
 		}
+
+        internal FuelReturn(IHttpWebRequestWrapperFactory httpWebRequestWrapperFactory)
+        {
+            this.httpWebRequestWrapperFactory = httpWebRequestWrapperFactory;
+        }
 
         /// <summary>
         /// Translates the object.
@@ -460,30 +468,26 @@ namespace FuelSDK
             if (obj.Page.HasValue && obj.Page.Value > 0)
                 completeURL += "?page=" + obj.Page.ToString();
 
-            var request = (HttpWebRequest)WebRequest.Create(completeURL.Trim());
-            request.Headers.Add("Authorization", "Bearer " + obj.AuthStub.Configuration.AuthToken);
-            request.Method = method;
-			request.ContentType = "application/json";
-			request.UserAgent = obj.AuthStub.Configuration.SDKVersion;
+            var httpWebRequestWrapper = this.httpWebRequestWrapperFactory.Create(new Uri(completeURL.Trim()));
+            httpWebRequestWrapper.Headers.Add("Authorization", "Bearer " + obj.AuthStub.AuthToken);
+            httpWebRequestWrapper.Method = method;
+            httpWebRequestWrapper.ContentType = "application/json";
+            httpWebRequestWrapper.UserAgent = ETClient.SDKVersion;
 
-			if (postValue)
-				using (var streamWriter = new StreamWriter(request.GetRequestStream()))
-					streamWriter.Write(JsonConvert.SerializeObject(obj));
+            if (postValue)
+                using (var streamWriter = new StreamWriter(httpWebRequestWrapper.GetRequestStream()))
+                    streamWriter.Write(JsonConvert.SerializeObject(obj));
 
-			// Get the response
-			try
-			{
-				using (var response = (HttpWebResponse)request.GetResponse())
-				using (var dataStream = response.GetResponseStream())
-				using (var reader = new StreamReader(dataStream))
-				{
-					Code = (int)response.StatusCode;
-					Status = (response.StatusCode == HttpStatusCode.OK);
-					MoreResults = false;
-					Message = (Status ? string.Empty : response.ToString());
-					return (Status ? reader.ReadToEnd() : null);
-				}
-			}
+            // Get the response
+            try
+            {
+                var response = httpWebRequestWrapper.GetResponse();
+                Code = (int)response.StatusCode;
+                Status = (response.StatusCode == HttpStatusCode.OK);
+                MoreResults = false;
+                Message = (Status ? string.Empty : response.ToString());
+                return (Status ? response.GetContent() : null);
+            }
 			catch (WebException we)
 			{
 				Code = (int)((HttpWebResponse)we.Response).StatusCode;

@@ -57,15 +57,5 @@ namespace FuelSDK
         /// </summary>
         /// <value>Authentication Mode</value>
         string Scope { get; set; }
-
-        string AuthToken { get; set; }
-
-        string InternalAuthToken { get; set; }
-
-        string RefreshKey { get; set; }
-
-        DateTime AuthTokenExpiration { get; set; }
-
-        string SDKVersion { get; }
     }
 }

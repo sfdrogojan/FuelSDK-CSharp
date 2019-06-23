@@ -6,7 +6,7 @@ using System.Text;
 
 namespace FuelSDK
 {
-    class ConfigFileWithParametersOverwriteConfigurationProvider : IConfigurationProvider
+    class FuelSDKConfigurationProvider : IConfigurationProvider
     {
         private IFuelSDKConfiguration configuration;
         

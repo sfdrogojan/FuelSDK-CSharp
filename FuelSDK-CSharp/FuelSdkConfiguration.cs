@@ -42,15 +42,5 @@ namespace FuelSDK
         public string AccountId { get; set; }
 
         public string Scope { get; set; }
-
-        public string AuthToken { get; set; }
-
-        public string InternalAuthToken { get; set; }
-
-        public string RefreshKey { get; set; }
-
-        public DateTime AuthTokenExpiration { get; set; }
-
-        public string SDKVersion => "FuelSDK-C#-v1.2.1";
     }
 }

@@ -60,6 +60,12 @@ namespace FuelSDK
         {
             return new HttpWebResponseWrapper(this.httpWebRequest.GetResponse());
         }
+
+        public WebHeaderCollection Headers
+        {
+            get { return this.httpWebRequest.Headers; }
+            set { this.httpWebRequest.Headers = value; }
+        }
     }
 
     public class HttpWebResponseWrapper : IHttpWebResponseWrapper
@@ -95,6 +101,11 @@ namespace FuelSDK
                 return stream.ReadToEnd();
             }
         }
+
+        public override string ToString()
+        {
+            return ((HttpWebResponse)webResponse).ToString();
+        }
     }
 
     public interface IHttpWebRequestWrapper
@@ -102,6 +113,7 @@ namespace FuelSDK
         string ContentType { get; set; }
         Stream GetRequestStream();
         IHttpWebResponseWrapper GetResponse();
+        WebHeaderCollection Headers { get; set; }
         string Method { get; set; }
         string UserAgent { get; set; }
     }
