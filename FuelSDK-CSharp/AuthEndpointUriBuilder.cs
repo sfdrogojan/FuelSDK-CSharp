@@ -2,7 +2,7 @@
 
 namespace FuelSDK
 {
-    public class AuthEndpointUriBuilder
+    internal class AuthEndpointUriBuilder
     {
         private const string legacyQuery = "legacy=1";
         private readonly IFuelSDKConfiguration configuration;

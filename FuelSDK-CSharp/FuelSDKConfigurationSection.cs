@@ -6,7 +6,7 @@ namespace FuelSDK
 	/// <summary>
 	/// FuelSDKConfigurationSection - Represents ConfigurationSection
 	/// </summary>
-	public class FuelSDKConfigurationSection : ConfigurationSection, IFuelSDKConfiguration
+	public class FuelSDKConfigurationSection : ConfigurationSection
     {
         /// <summary>
         /// Gets or sets the app signature.
@@ -122,7 +122,7 @@ namespace FuelSDK
         /// </summary>
         /// <param name="defaultAuthEndpoint">The default auth endpoint</param>
         /// <returns>The updated <see cref="FuelSDKConfigurationSection"/> instance</returns>
-	    public IFuelSDKConfiguration WithDefaultAuthEndpoint(string defaultAuthEndpoint)
+	    public FuelSDKConfigurationSection WithDefaultAuthEndpoint(string defaultAuthEndpoint)
 	    {
 	        if (string.IsNullOrEmpty(AuthenticationEndPoint))
 	        {
@@ -132,7 +132,7 @@ namespace FuelSDK
 	        return this;
 	    }
 
-	    public IFuelSDKConfiguration WithDefaultRestEndpoint(string defaultRestEndpoint)
+	    public FuelSDKConfigurationSection WithDefaultRestEndpoint(string defaultRestEndpoint)
 	    {
 	        if (string.IsNullOrEmpty(RestEndPoint))
 	        {
@@ -141,10 +141,5 @@ namespace FuelSDK
 
 	        return this;
 	    }
-
-        IFuelSDKConfiguration IFuelSDKConfiguration.Clone()
-        {
-            return (IFuelSDKConfiguration)this.Clone();
-        }
     }
 }

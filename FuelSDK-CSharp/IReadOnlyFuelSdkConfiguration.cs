@@ -2,69 +2,61 @@
 
 namespace FuelSDK
 {
-    internal interface IFuelSDKConfiguration
+    public interface IReadOnlyFuelSdkConfiguration
     {
         /// <summary>
         /// Gets or sets the app signature.
         /// </summary>
         /// <value>The app signature.</value>
-        string AppSignature { get; set; }
+        string AppSignature { get; }
 
         /// <summary>
         /// Gets or sets the client identifier.
         /// </summary>
         /// <value>The client identifier.</value>
-        string ClientId { get; set; }
+        string ClientId { get; }
 
         /// <summary>
         /// Gets or sets the client secret.
         /// </summary>
         /// <value>The client secret.</value>
-        string ClientSecret { get; set; }
+        string ClientSecret { get; }
 
         /// <summary>
         /// Gets or sets the SOAP end point.
         /// </summary>
         /// <value>The SOAP end point.</value>
-        string SoapEndPoint { get; set; }
+        string SoapEndPoint { get; }
 
         /// <summary>
-        /// Gets or sets the authentication end point.
+        /// Gets or sets the authentification end point.
         /// </summary>
-        /// <value>The authentication end point.</value>
-        string AuthenticationEndPoint { get; set; }
+        /// <value>The authentification end point.</value>
+        string AuthenticationEndPoint { get; }
 
         /// <summary>
         /// Gets or sets the REST end point.
         /// </summary>
         /// <value>The REST end point.</value>
-        string RestEndPoint { get; set; }
+        string RestEndPoint { get; }
 
         /// <summary>
         /// Gets or sets the Authentication Mode.
         /// </summary>
         /// <value>Authentication Mode</value>
-        string UseOAuth2Authentication { get; set; }
+        string UseOAuth2Authentication { get; }
 
         /// <summary>
         /// Gets or sets the Account Id.
         /// </summary>
         /// <value>Authentication Mode</value>
-        string AccountId { get; set; }
+        string AccountId { get; }
 
         /// <summary>
         /// Gets or sets the Authentication Mode.
         /// </summary>
         /// <value>Authentication Mode</value>
-        string Scope { get; set; }
-
-        string AuthToken { get; set; }
-
-        string InternalAuthToken { get; set; }
-
-        string RefreshKey { get; set; }
-
-        DateTime AuthTokenExpiration { get; set; }
+        string Scope { get; }
 
         string SDKVersion { get; }
     }

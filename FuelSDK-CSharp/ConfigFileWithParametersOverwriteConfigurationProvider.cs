@@ -6,18 +6,14 @@ using System.Text;
 
 namespace FuelSDK
 {
-    class ConfigFileWithParametersOverwriteConfigurationProvider : ConfigurationProvider
+    class ConfigFileWithParametersOverwriteConfigurationProvider : IConfigurationProvider
     {
         private IFuelSDKConfiguration configuration;
-
+        
         public IFuelSDKConfiguration Get(NameValueCollection parameters)
         {
-            // Get configuration file and set variables
-            configuration = ConfigUtil.GetFuelSDKConfigSection();
-            configuration = (configuration != null ? (FuelSDKConfigurationSection)configuration.Clone() : new FuelSDKConfigurationSection());
-            configuration = configuration
-                .WithDefaultAuthEndpoint(DefaultEndpoints.Auth)
-                .WithDefaultRestEndpoint(DefaultEndpoints.Rest);
+            configuration = new FuelSDKConfiguration();
+
             if (parameters != null)
             {
                 if (parameters.AllKeys.Contains("appSignature"))

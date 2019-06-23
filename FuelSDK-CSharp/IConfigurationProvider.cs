@@ -7,7 +7,7 @@ using FuelSDK;
 
 namespace FuelSDK
 {
-    interface ConfigurationProvider
+    interface IConfigurationProvider
     {
         IFuelSDKConfiguration Get(NameValueCollection parameters);
     }

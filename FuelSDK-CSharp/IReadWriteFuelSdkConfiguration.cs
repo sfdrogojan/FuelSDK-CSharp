@@ -2,7 +2,7 @@
 
 namespace FuelSDK
 {
-    internal interface IFuelSDKConfiguration
+    internal interface IReadWriteFuelSdkConfiguration : IReadOnlyFuelSdkConfiguration
     {
         /// <summary>
         /// Gets or sets the app signature.
@@ -65,7 +65,5 @@ namespace FuelSDK
         string RefreshKey { get; set; }
 
         DateTime AuthTokenExpiration { get; set; }
-
-        string SDKVersion { get; }
     }
 }

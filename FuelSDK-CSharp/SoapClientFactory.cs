@@ -5,21 +5,17 @@ using FuelSDK.EndpointBehaviors;
 
 namespace FuelSDK
 {
-    public class SoapClientFactory : ISoapClientFactory
+    internal class SoapClientFactory : ISoapClientFactory
     {
         private readonly IFuelSDKConfiguration configuration;
-        private readonly string authToken;
-        private readonly string sdkVersion;
         private static DateTime soapEndPointExpiration;
         private static string fetchedSoapEndpoint;
         private const long cacheDurationInMinutes = 10;
         private readonly ETClient etClient;
 
-        public SoapClientFactory(IFuelSDKConfiguration configuration, string authToken, string sdkVersion, ETClient etClient)
+        public SoapClientFactory(IFuelSDKConfiguration configuration, ETClient etClient)
         {
             this.configuration = configuration;
-            this.authToken = authToken;
-            this.sdkVersion = sdkVersion;
             this.etClient = etClient;
         }
 
@@ -31,10 +27,10 @@ namespace FuelSDK
 
 #if NET40
             ChannelFactory<Soap> channelFactory = new ChannelFactory<Soap>(binding, endpointAddress);
-            channelFactory.Endpoint.Behaviors.Add(new AddHeadersEndpointBehavior(authToken, sdkVersion));
+            channelFactory.Endpoint.Behaviors.Add(new AddHeadersEndpointBehavior(configuration.AuthToken, configuration.SDKVersion));
 #else
             ChannelFactory<Soap> channelFactory = new ChannelFactory<Soap>(new BasicHttpsBinding(BasicHttpsSecurityMode.Transport), endpointAddress);
-            channelFactory.Endpoint.EndpointBehaviors.Add(new AddHeadersEndpointBehavior(authToken, sdkVersion));
+            channelFactory.Endpoint.EndpointBehaviors.Add(new AddHeadersEndpointBehavior(configuration.AuthToken, configuration.SDKVersion));
 #endif
 
             return channelFactory.CreateChannel();

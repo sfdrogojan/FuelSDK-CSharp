@@ -407,7 +407,7 @@ namespace FuelSDK
 			var client = objs.Select(x => x.AuthStub).FirstOrDefault();
 			if (client == null)
 				throw new InvalidOperationException("client");
-			client.RefreshToken();
+			client.AuthService.RefreshToken();
 
             var response = func(client, objs.Select(select).ToArray());
             RequestID = response.RequestID;
@@ -423,7 +423,7 @@ namespace FuelSDK
 		{
 			if (obj == null)
 				throw new ArgumentNullException("obj");
-			obj.AuthStub.RefreshToken();
+			obj.AuthStub.AuthService.RefreshToken();
 
 			object propValue;
 			string propValueAsString;
@@ -461,10 +461,10 @@ namespace FuelSDK
                 completeURL += "?page=" + obj.Page.ToString();
 
             var request = (HttpWebRequest)WebRequest.Create(completeURL.Trim());
-            request.Headers.Add("Authorization", "Bearer " + obj.AuthStub.AuthToken);
+            request.Headers.Add("Authorization", "Bearer " + obj.AuthStub.configuration.AuthToken);
             request.Method = method;
 			request.ContentType = "application/json";
-			request.UserAgent = ETClient.SDKVersion;
+			request.UserAgent = obj.AuthStub.configuration.SDKVersion;
 
 			if (postValue)
 				using (var streamWriter = new StreamWriter(request.GetRequestStream()))
